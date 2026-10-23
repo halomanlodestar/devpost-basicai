@@ -1,0 +1,19 @@
+{
+  "name": "ai-basics",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*", "scripts/*"],
+  "scripts": {
+    "dev": "bun run --filter '@app/api' --filter '@app/web' dev",
+    "test": "bun test",
+    "typecheck": "bun run --filter '*' typecheck",
+    "db:generate": "bun run --filter '@app/db' generate",
+    "db:migrate": "bun run --filter '@app/db' migrate",
+    "db:seed": "bun run --filter '@app/db' seed",
+    "db:reset-learning": "bun run --filter '@app/db' reset-learning",
+    "replay": "bun run --filter '@app/replay' replay"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
+  }
+}

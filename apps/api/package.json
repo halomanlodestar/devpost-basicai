@@ -1,0 +1,25 @@
+{
+  "name": "@app/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/trpc/router.ts"
+  },
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@app/core": "workspace:*",
+    "@app/db": "workspace:*",
+    "@trpc/server": "^11.19.0",
+    "better-auth": "^1.7.12",
+    "bullmq": "^6.4.1",
+    "web-push": "^3.6.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/web-push": "^3.6.4"
+  }
+}

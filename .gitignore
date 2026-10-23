@@ -1,0 +1,19 @@
+/devpost/learner-profile.md
+.env
+.env.*
+!.env.example
+
+# deps & builds
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+.vercel/
+next-env.d.ts
+
+.vscode
+
+# generated
+packages/db/src/generated/
+scripts/replay/.env

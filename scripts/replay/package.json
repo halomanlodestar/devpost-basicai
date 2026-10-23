@@ -1,0 +1,12 @@
+{
+  "name": "@app/replay",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "replay": "bun index.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@app/core": "workspace:*"
+  }
+}

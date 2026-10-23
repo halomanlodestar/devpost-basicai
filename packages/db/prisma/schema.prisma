@@ -1,0 +1,11 @@
+// The event log (ticket_event) is the source of truth; trip state and
+// segment stats are derived caches of it. See devpost/spec.md > Data Model.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
