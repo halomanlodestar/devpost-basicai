@@ -1,1 +1,3 @@
-export { cn } from "cn"
+/** @format */
+
+export { cn } from "cn";
