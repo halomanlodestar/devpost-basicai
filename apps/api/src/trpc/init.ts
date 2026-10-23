@@ -1,3 +1,5 @@
+/** @format */
+
 import { initTRPC } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 

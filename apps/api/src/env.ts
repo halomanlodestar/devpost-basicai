@@ -1,3 +1,5 @@
+/** @format */
+
 import { z } from "zod";
 
 const Env = z.object({

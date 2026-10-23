@@ -1,3 +1,5 @@
+/** @format */
+
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { withCors } from "./cors";
 import { env } from "./env";
@@ -5,7 +7,12 @@ import { createContext } from "./trpc/init";
 import { appRouter } from "./trpc/router";
 
 const trpc = withCors((req) =>
-  fetchRequestHandler({ endpoint: "/trpc", req, router: appRouter, createContext }),
+  fetchRequestHandler({
+    endpoint: "/trpc",
+    req,
+    router: appRouter,
+    createContext,
+  }),
 );
 
 const server = Bun.serve({

@@ -1,3 +1,5 @@
+/** @format */
+
 import { router } from "./init";
 
 export const appRouter = router({});
