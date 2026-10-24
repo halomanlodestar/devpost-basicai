@@ -1,6 +1,6 @@
 /** @format */
 
-import { buildNetwork } from "@app/core";
+import { addDays, buildNetwork, serviceDate } from "@app/core";
 import type { StatBucket, StatsStore } from "@app/core/types";
 import type { Db } from "@app/db";
 import type { State } from "./types";
@@ -21,13 +21,17 @@ export function statsOf(state: State): StatsStore {
   };
 }
 
-export async function loadState(db: Db): Promise<State> {
+export async function loadState(db: Db, tz: string): Promise<State> {
+  const today = serviceDate(Date.now(), tz);
+  const serviceDates = [addDays(today, -1), today];
+
   const [stops, routes, journeys, segments, trips, stats] = await Promise.all([
     db.stop.findMany(),
     db.route.findMany({ include: { stops: true } }),
     db.journey.findMany(),
     db.segment.findMany(),
-    db.trip.findMany({ where: { status: { not: "completed" } } }),
+    // today's trips in every status: a completed one must stay completed, not reappear as "not started"
+    db.trip.findMany({ where: { serviceDate: { in: serviceDates } } }),
     db.segmentStat.findMany(),
   ]);
 

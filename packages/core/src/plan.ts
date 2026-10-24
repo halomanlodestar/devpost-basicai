@@ -57,6 +57,20 @@ export function findPatterns(
   return directPatterns(net, from, to);
 }
 
+/** The bus has since started (or finished) a later journey, so it isn't running this one. */
+function superseded(
+  ctx: PredictCtx,
+  trips: TripLookup,
+  journey: Journey,
+  date: string,
+) {
+  return (ctx.net.journeysByBus.get(journey.busId) ?? []).some(
+    (j) =>
+      j.departureMin > journey.departureMin &&
+      (trips(j.id, date)?.status ?? "scheduled") !== "scheduled",
+  );
+}
+
 function legView(
   ctx: PredictCtx,
   trips: TripLookup,
@@ -76,6 +90,8 @@ function legView(
 
   if (!active && ctx.now - expected[leg.boardSeq]! > NOT_STARTED_GRACE_MS)
     return null;
+
+  if (!active && superseded(ctx, trips, journey, date)) return null;
 
   const estimated = estimatedTimes(ctx, journey, expected, trip);
 
@@ -121,6 +137,7 @@ function journeyView(
     expectedX: v.expected[leg.boardSeq]!,
     lateMin: lateMinutes(boardEst, v.expected[leg.boardSeq]!),
     status: v.trip ? "active" : "not_started",
+    overdue: !v.trip && v.expected[leg.boardSeq]! < ctx.now,
     lastSeen:
       v.trip?.lastStopId && v.trip.lastSeenAt
         ? {
@@ -154,7 +171,11 @@ export function plan(
     )
       .map((j) => journeyView(ctx, trips, pattern, j, today))
       .filter((v): v is JourneyView => v !== null)
-      .sort((a, b) => a.beAtStopBy - b.beAtStopBy);
+      // buses we have evidence for first, nearest first; unreported past-due ones after
+      .sort(
+        (a, b) =>
+          Number(a.overdue) - Number(b.overdue) || a.beAtStopBy - b.beAtStopBy,
+      );
 
     if (journeys.length === 0) continue;
 

@@ -11,7 +11,7 @@ import { makeCreateContext } from "./trpc/init";
 import { appRouter } from "./trpc/router";
 
 const db = createDb(env.DATABASE_URL);
-const state = await loadState(db);
+const state = await loadState(db, env.TZ_SERVICE);
 const hub = new Hub(state, env.TZ_SERVICE);
 hub.start();
 const createContext = makeCreateContext({ state, hub, tz: env.TZ_SERVICE });
@@ -46,5 +46,5 @@ const server = Bun.serve({
 
 console.log(
   `api listening on ${server.url} · ${state.net.stops.size} stops, ${state.net.routes.size} routes, ` +
-    `${state.net.journeys.size} journeys, ${state.trips.size} open trips in memory`,
+    `${state.net.journeys.size} journeys, ${state.trips.size} trips in memory`,
 );

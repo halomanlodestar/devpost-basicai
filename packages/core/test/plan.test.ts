@@ -42,17 +42,39 @@ describe("direct planning (round 0)", () => {
     expect(r.options.map((o) => o.id)).toEqual(["R-DN"]);
   });
 
-  test("a silent overdue journey is clamped to now, then dropped after the grace window", () => {
+  test("a silent overdue journey is flagged, listed after reporting buses, then dropped after the grace window", () => {
     const late = plan(ctx("08:40"), "B", "D", noTrips);
     if (late.kind !== "ok") throw new Error(late.kind);
-    const j = late.options[0]!.journeys[0]!;
-    expect(j.legs[0]!.journeyId).toBe("R-UP-0800");
-    expect(j.legs[0]!.boardEst).toBeGreaterThanOrEqual(at("08:40"));
-    expect(j.lateMin).toBeGreaterThan(0);
+    const [first, ghost] = late.options[0]!.journeys;
+    expect(first!.legs[0]!.journeyId).toBe("R-UP-0900");
+    expect(first!.overdue).toBe(false);
+    expect(late.options[0]!.next.legs[0]!.journeyId).toBe("R-UP-0900");
+    expect(ghost!.legs[0]!.journeyId).toBe("R-UP-0800");
+    expect(ghost!.overdue).toBe(true);
+    expect(ghost!.legs[0]!.boardEst).toBeGreaterThanOrEqual(at("08:40"));
 
     const gone = plan(ctx("10:15"), "B", "D", noTrips);
     if (gone.kind !== "ok") throw new Error(gone.kind);
     expect(gone.options[0]!.journeys.map((x) => x.legs[0]!.journeyId)).toEqual([
+      "R-UP-0900",
+    ]);
+  });
+
+  test("a never-reported journey is hidden once its bus has started a later one", () => {
+    // BUS1 runs R-UP-0800 then R-DN-0900; it skipped reporting on 0800 but is now on 0900
+    const trips = (id: string) =>
+      id === "R-DN-0900"
+        ? {
+            status: "active" as const,
+            lastSeq: 0,
+            lastStopId: "D",
+            anchorAt: at("09:02"),
+            lastSeenAt: at("09:02"),
+          }
+        : undefined;
+    const r = plan(ctx("08:40"), "B", "D", trips);
+    if (r.kind !== "ok") throw new Error(r.kind);
+    expect(r.options[0]!.journeys.map((j) => j.legs[0]!.journeyId)).toEqual([
       "R-UP-0900",
     ]);
   });

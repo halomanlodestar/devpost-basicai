@@ -55,6 +55,8 @@ export interface JourneyView {
   expectedX: number;
   lateMin: number;
   status: "not_started" | "active";
+  /** not started and already past its expected time at X, with no report from the bus */
+  overdue: boolean;
   lastSeen?: LastSeen;
 }
 

@@ -29,7 +29,7 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
   Learner check: Keep a Journeys screen open, run `bun run replay -- --send <stop>` a couple of times, and watch the row change by itself; then send a forged one and see nothing change.
   Commit: `Add signed ticket ingest and live predictions over SSE`
 
-- [ ] **3. The timetable is wrong, and you watch the app learn that**
+- [x] **3. The timetable is wrong, and you watch the app learn that**
   Becomes usable: `bun run replay -- --scenario demo` plays two or three journeys: the first opens at timetable time and drifts to reality; a later journey opens already corrected. The console narrates the dead-zone flush, the forged event and the duplicate.
   Why now: The second half of the kernel and the "oh, that's cool" demo beat. It depends on slice 2's trip updates and should be proven before transfers and alerts build on learned times.
   PRD ref: `prd.md > Lateness and Predictions`, `prd.md > Demo Replay (script, not product)`
@@ -83,9 +83,10 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
 
 - [x] Early usable behavior explored — after slice 1 (UI round 1 on Search/Results/Journeys)
   Feedback (deferred to the next UI round by the learner's choice):
-  - [ ] Journey row is ambiguous: "Be at your stop by 1:38" next to "There by 2:33" read as a 1-hour wait. Name both stops ("Bus at ABES College ~1:43 · be there by 1:38" / "Reaches Mohan Nagar ~2:33") and show the bus estimate beside the buffered time.
-  - [ ] A never-reported, past-due bus reads as a contradiction ("not started · expected 12:00" next to 1:38). Decide: show honestly ("was due 12:00, no report yet") or hide once past due. Open product decision for the learner.
+  - [x] Journey row is ambiguous: "Be at your stop by 1:38" next to "There by 2:33" read as a 1-hour wait. Fixed in round 2: "Be at Raj Nagar by … · bus due ~…" / "Reaches Mohan Nagar by …", same naming on Results. (Learner to retry.)
+  - [x] A never-reported, past-due bus reads as a contradiction. Learner chose (round 2): hide it once its bus has started a later journey; otherwise show it honestly as "Was due at … · no report from this bus yet", listed after buses with evidence and never an option's headline.
 - [ ] Kernel checkpoint — after slice 3: watch the demo scenario self-correct; UI round 2
+  Learner ran `--scenario demo --speed 60` (15:00 and 16:00 journeys). Learned route 1 = 59.0 min vs timetable 45 (reality ~60); later buses opened corrected. Found: ghost journeys at the top, and completed trips reappearing after an API reload — both fixed (see Revisions). Awaiting the learner's look at the reworked rows.
 - [ ] On-phone checkpoint — after slice 5: deployed app with transfers on Android; UI round 3
 - [ ] Final kick-the-tires exploration and feedback completed (UI round 4)
 
@@ -120,3 +121,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - The demo narrates from a rider at Raj Nagar → Mohan Nagar by default (`--from/--to`). From ABES College, the first stop, the bus is "passed" the moment it leaves, so the first journey's drift was invisible; College → Home still shows the next journey opening corrected.
 - `db:reset-learning` clears the database only; the API keeps learned times and trips in memory until it restarts. Reset, then restart the API, before a recording.
 - Learning adopts a permanent change: 3 same-side outliers in a row become the new normal (spec > Learning). The long-run tests the learner asked for exposed that a >3× lasting slowdown (road closure) was rejected forever; `learn-long.test.ts` now covers normal days, congestion + outliers, and a closure.
+- Planner hides a never-reported journey once its bus has started a later one (it can't be running both), flags the rest as `overdue`, and sorts them after journeys with evidence; `next` is never an unreported past-due bus. Found in the learner's checkpoint-2 run.
+- API boot loads today's and yesterday's trips in every status. It used to load only non-completed trips, so after a restart a journey that had already finished came back as "not started".
