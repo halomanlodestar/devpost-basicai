@@ -7,6 +7,7 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "@app/core": "workspace:*"
+    "@app/core": "workspace:*",
+    "@app/db": "workspace:*"
   }
 }

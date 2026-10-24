@@ -60,4 +60,6 @@ export interface Network {
   /** busId → journeys sorted by departure */
   journeysByBus: Map<string, Journey[]>;
   segmentByPair: Map<string, Segment>;
+  /** segmentId → routes that ride it (learning on a shared road touches them all) */
+  segmentRoutes: Map<string, Set<string>>;
 }

@@ -84,6 +84,7 @@
       "name": "@app/replay",
       "dependencies": {
         "@app/core": "workspace:*",
+        "@app/db": "workspace:*",
       },
     },
   },

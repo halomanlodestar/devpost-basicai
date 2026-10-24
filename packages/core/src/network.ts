@@ -16,6 +16,7 @@ export function buildNetwork(data: NetworkData): Network {
     seqOf: new Map(),
     journeysByRoute: new Map(),
     journeysByBus: new Map(),
+    segmentRoutes: new Map(),
     segmentByPair: new Map(
       data.segments.map((s) => [pairKey(s.fromStopId, s.toStopId), s]),
     ),
@@ -38,6 +39,14 @@ export function buildNetwork(data: NetworkData): Network {
         throw new Error(
           `route ${route.id}: missing segment ${stops[i - 1]!.stopId} → ${rs.stopId}`,
         );
+      if (i > 0) {
+        const seg = net.segmentByPair.get(
+          pairKey(stops[i - 1]!.stopId, rs.stopId),
+        )!;
+        const routes = net.segmentRoutes.get(seg.id) ?? new Set<string>();
+        routes.add(route.id);
+        net.segmentRoutes.set(seg.id, routes);
+      }
       seqs.set(rs.stopId, i);
       const list = net.stopRoutes.get(rs.stopId) ?? [];
       list.push({ routeId: route.id, seq: i });

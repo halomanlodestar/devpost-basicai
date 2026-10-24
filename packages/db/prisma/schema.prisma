@@ -53,8 +53,36 @@ model Segment {
   fromStopId String @map("from_stop_id")
   toStopId   String @map("to_stop_id")
 
+  stats SegmentStat[]
+
   @@unique([fromStopId, toStopId])
   @@map("segment")
+}
+
+enum StatBucket {
+  am_peak
+  midday
+  pm_peak
+  off
+  all
+
+  @@map("stat_bucket")
+}
+
+/// Learned typical travel time per segment and time-of-day bucket. Derived from ticket_event.
+model SegmentStat {
+  segmentId      String     @map("segment_id")
+  bucket         StatBucket
+  typicalSec     Float      @map("typical_sec")
+  samples        Int
+  rejected       Int        @default(0)
+  /// consecutive same-side outliers; at 3 their mean becomes the new normal
+  pendingCount   Int        @default(0) @map("pending_count")
+  pendingMeanSec Float      @default(0) @map("pending_mean_sec")
+  segment        Segment    @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  @@id([segmentId, bucket])
+  @@map("segment_stat")
 }
 
 // ── Fleet / trust ────────────────────────────────────────

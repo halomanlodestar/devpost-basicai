@@ -1,5 +1,6 @@
 /** @format */
 
+import type { LearnedSample } from "./learn";
 import type { Journey } from "./network";
 import type { TripState } from "./predict";
 
@@ -65,6 +66,8 @@ export interface IngestResult {
   resolution: Resolution;
   /** journeys whose trip state changed */
   touched: string[];
+  /** segment samples this event produced */
+  learned: LearnedSample[];
 }
 
 /** One ticket event on the wire (`POST /ingest/events`). */

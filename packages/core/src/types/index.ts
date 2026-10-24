@@ -1,6 +1,7 @@
 /** @format */
 
 export type * from "./ingest";
+export type * from "./learn";
 /** @format */
 
 export type * from "./network";

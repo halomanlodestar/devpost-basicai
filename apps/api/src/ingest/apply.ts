@@ -1,16 +1,23 @@
 /** @format */
 
-// One transaction per batch: dedupe → resolve → trip state (spec > Ingest).
+// One transaction per batch: dedupe → resolve → trip state → learn (spec > Ingest).
 // Memory is updated only after the commit, so a failed batch leaves no trace.
 
-import { ingestEvent, serviceDate, timetableOnly } from "@app/core";
-import type { IngestResponse, TripState, WireEvent } from "@app/core/types";
+import { ingestEvent, serviceDate, typicalFrom } from "@app/core";
+import type {
+  IngestResponse,
+  SegmentStat,
+  StatBucket,
+  TripState,
+  WireEvent,
+} from "@app/core/types";
 import type { Db } from "@app/db";
-import { tripKey } from "../state";
+import { statKey, tripKey } from "../state";
 import type {
   BatchResult,
   OverlayStore,
   State,
+  StatsOverlay,
   VerifiedEmitter,
 } from "../types";
 
@@ -21,6 +28,16 @@ function overlay(state: State): OverlayStore {
     changes,
     get: (j, d) => changes.get(tripKey(j, d)) ?? state.trips.get(tripKey(j, d)),
     set: (j, d, t) => void changes.set(tripKey(j, d), t),
+  };
+}
+
+function statsOverlay(state: State): StatsOverlay {
+  const changes = new Map<string, SegmentStat>();
+
+  return {
+    changes,
+    get: (s, b) => changes.get(statKey(s, b)) ?? state.stats.get(statKey(s, b)),
+    set: (s, b, v) => void changes.set(statKey(s, b), v),
   };
 }
 
@@ -52,7 +69,13 @@ export function applyBatch(
 ): Promise<BatchResult> {
   return serially(async () => {
     const store = overlay(state);
-    const ctx = { net: state.net, typical: timetableOnly, tz, now: Date.now() };
+    const stats = statsOverlay(state);
+    const ctx = {
+      net: state.net,
+      typical: typicalFrom(stats),
+      tz,
+      now: Date.now(),
+    };
     const response: IngestResponse = {
       accepted: 0,
       duplicates: 0,
@@ -90,6 +113,7 @@ export function applyBatch(
           store,
           emitter.busId,
           ev,
+          stats,
         );
 
         if (resolution.kind === "unassigned") {
@@ -117,6 +141,16 @@ export function applyBatch(
           data: { tripId: ids.get(resolution.journeyId) },
         });
       }
+
+      for (const [key, stat] of stats.changes) {
+        const [segmentId, bucket] = key.split(":") as [string, StatBucket];
+
+        await tx.segmentStat.upsert({
+          where: { segmentId_bucket: { segmentId, bucket } },
+          create: { segmentId, bucket, ...stat },
+          update: stat,
+        });
+      }
     });
 
     const routeIds = new Set<string>();
@@ -124,6 +158,14 @@ export function applyBatch(
     for (const [key, trip] of store.changes) {
       state.trips.set(key, trip);
       routeIds.add(state.net.journeys.get(key.split("@")[0]!)!.routeId);
+    }
+
+    // a learned segment changes expected times on every route that rides it
+    for (const [key, stat] of stats.changes) {
+      state.stats.set(key, stat);
+
+      for (const r of state.net.segmentRoutes.get(key.split(":")[0]!) ?? [])
+        routeIds.add(r);
     }
 
     return { response, routeIds };

@@ -19,7 +19,7 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
   Learner check: Open http://localhost:3000, search College → Home, swap the stops, try From = To, open an option and read the journey rows. Tell me what you'd change in the look (UI round 1).
   Commit: `Scaffold workspace and add timetable-based direct search`
 
-- [ ] **2. A signed ticket event moves the bus, live, on the rider's screen**
+- [x] **2. A signed ticket event moves the bus, live, on the rider's screen**
   Becomes usable: Running the replay script (or one signed curl) makes a journey row change without a refresh: predicted time, "12 min late", "last seen at [stop] · 1 min ago". Forged, revoked and duplicate events change nothing.
   Why now: This is the kernel's first half (the ticket machine is the GPS) and the riskiest plumbing: HMAC device contract, server-side trip resolution, forward-only state, and tRPC SSE under `Bun.serve`. Everything later (learning, transfers, alerts) reacts to trip updates.
   PRD ref: `prd.md > The Core Journey` (step 5), `prd.md > Ticket Events (background, no UI)`, `prd.md > Journeys` (estimated, late, last seen), `prd.md > States and Boundaries` (stale bus)
@@ -116,3 +116,7 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Trip resolution gained a fifth outcome, `stale`: an event older than the active trip's anchor is stored against that trip but moves nothing. Without it, an out-of-order event at an earlier stop fell through to "start a trip" and could wrongly start the bus's return journey.
 - Ingest's signature/dedupe/flush checks are pure tests in `packages/core/test/resolve.test.ts` (no test database); the HTTP path is verified live with the replay script. `apps/api/test/` stays empty for now.
 - The web app reads only `plan.watch` (the first SSE message is the first paint); `plan.search` stays as a plain query for scripts and debugging.
+- `--speed N` runs ticket times on the same fast clock (spec said `occurredAt` stays real time). With real timestamps a sped-up run produces seconds-long segments that the outlier band rejects, so rehearsal taught nothing; on the fast clock it learns realistic times. Rehearsal data still must be wiped before recording.
+- The demo narrates from a rider at Raj Nagar → Mohan Nagar by default (`--from/--to`). From ABES College, the first stop, the bus is "passed" the moment it leaves, so the first journey's drift was invisible; College → Home still shows the next journey opening corrected.
+- `db:reset-learning` clears the database only; the API keeps learned times and trips in memory until it restarts. Reset, then restart the API, before a recording.
+- Learning adopts a permanent change: 3 same-side outliers in a row become the new normal (spec > Learning). The long-run tests the learner asked for exposed that a >3× lasting slowdown (road closure) was rejected forever; `learn-long.test.ts` now covers normal days, congestion + outliers, and a closure.

@@ -3,13 +3,16 @@
 // Event → trip (spec > Trip Resolution) and forward-only trip state (spec > Trip State).
 // The device sends only stop and time; the server decides which trip it belongs to.
 
+import { learnFromAdvance } from "./learn";
 import { expectedTimes } from "./predict";
 import { MIN, serviceDate } from "./time";
 import type {
   IngestResult,
+  LearnedSample,
   PredictCtx,
   Resolution,
   StartCandidate,
+  StatsStore,
   StopEvent,
   TripState,
   TripStore,
@@ -118,13 +121,35 @@ export function applyResolution(
   return [...touched, r.journeyId];
 }
 
-/** Resolve + apply, returning the journeys whose trip state changed. */
+/**
+ * Resolve + apply + learn. When the event advances the bus's active trip, the
+ * time since its anchor becomes segment samples in `stats`.
+ */
 export function ingestEvent(
   ctx: PredictCtx,
   store: TripStore,
   busId: string,
   ev: StopEvent,
+  stats?: StatsStore,
 ): IngestResult {
   const resolution = resolveEvent(ctx, store, busId, ev);
-  return { resolution, touched: applyResolution(ctx, store, resolution, ev) };
+  let learned: LearnedSample[] = [];
+  if (stats && resolution.kind === "continue") {
+    const trip = store.get(
+      resolution.journeyId,
+      serviceDate(ev.occurredAt, ctx.tz),
+    )!;
+    learned = learnFromAdvance(ctx, stats, {
+      journeyId: resolution.journeyId,
+      fromSeq: trip.lastSeq!,
+      fromAt: trip.anchorAt!,
+      toSeq: resolution.seq,
+      toAt: ev.occurredAt,
+    });
+  }
+  return {
+    resolution,
+    touched: applyResolution(ctx, store, resolution, ev),
+    learned,
+  };
 }

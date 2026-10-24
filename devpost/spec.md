@@ -194,6 +194,7 @@ Implements `prd.md > Lateness and Predictions` (self-correction). `packages/core
 
   This makes "a fresh journey starts near reality after two or three replayed journeys" true by construction.
 - **Outliers:** once a row has ≥3 samples, reject samples outside **[0.33×, 3×] typical**. Before that, check against the timetable prior with the same bounds. Rejected samples are counted but ignored.
+- **Permanent change:** 3 outliers in a row on the same side (all slower or all faster) mean the road itself changed (closure, diversion). Their mean becomes the new typical with `samples = 1`. A normal sample in between, or an outlier on the other side, resets the streak. Stored as `pending_count` / `pending_mean_sec`.
 - **Lookup (`typical(segment, bucket)`):**
   1. the bucket row if it has ≥3 samples;
   2. else the `all` row if it has ≥1 sample;
@@ -321,7 +322,8 @@ Implements `prd.md > Demo Replay (script, not product)`. `scripts/replay`:
   - It sends one **forged** event (wrong key), which is rejected (console shows 401).
   - It re-sends one event, counted as a duplicate.
   - It logs each beat for narration.
-- **`--speed N`:** compresses wall-clock waits for rehearsal only. `occurredAt` still uses real time, so rehearsal data is only a smoke test. Use `bun run db:reset-learning` to wipe the learned stats before recording.
+- **`--speed N`:** compresses wall-clock waits for rehearsal only. Ticket times run on the same fast clock, so the API learns realistic segment times from a rehearsal. Wipe them before recording with `bun run db:reset-learning`, then restart the API (it holds learned state in memory).
+- **`--from/--to`:** the rider whose view is narrated, default Raj Nagar → Mohan Nagar (mid-route, so the first journey's drift is visible before the bus passes).
 
 ## Data Model
 `packages/db/prisma/schema.prisma`. The **event log is the source of truth**; trip state and segment stats are derived caches of it. IDs are `cuid` strings, except that stops and routes use readable codes for seeding and the replay. Timestamps are `timestamptz`, and service dates are computed in Asia/Kolkata.

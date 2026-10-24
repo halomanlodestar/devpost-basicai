@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./secret": "./src/secret.ts"
+    "./secret": "./src/secret.ts",
+    "./network": "./prisma/network.ts"
   },
   "scripts": {
     "generate": "bun --bun prisma generate",
