@@ -21,7 +21,7 @@ export function PlanFallback({ query, from, to }: PlanFallbackProps) {
     );
   if (query.isError || !query.data)
     return (
-      <div className="rounded-2xl border bg-card p-6 text-center">
+      <div className="rounded-xl bg-card p-6 text-center">
         <p className="font-medium">Can&apos;t reach live data right now.</p>
         <Button
           variant="outline"
@@ -35,7 +35,7 @@ export function PlanFallback({ query, from, to }: PlanFallbackProps) {
   const r = query.data;
   if (r.kind === "no_route")
     return (
-      <div className="rounded-2xl border bg-card p-6 text-center">
+      <div className="rounded-xl bg-card p-6 text-center">
         <p className="font-medium">No buses connect these stops.</p>
         {r.reverseServed && (
           <Button
@@ -54,7 +54,7 @@ export function PlanFallback({ query, from, to }: PlanFallbackProps) {
     );
   if (r.kind === "no_more_today")
     return (
-      <div className="rounded-2xl border bg-card p-6 text-center">
+      <div className="rounded-xl bg-card p-6 text-center">
         <p className="font-medium">No more buses today.</p>
         {r.tomorrowFirst && (
           <p className="mt-1 text-sm text-muted-foreground">

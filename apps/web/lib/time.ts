@@ -12,6 +12,13 @@ const clock = new Intl.DateTimeFormat("en-IN", {
 export const fmtClock = (ms: number) =>
   clock.format(ms).replace(/\s/g, " ").toLowerCase();
 
+/** { hm: "4:40", ampm: "pm" } for big times with a small suffix. */
+export function clockParts(ms: number) {
+  const [hm = "", ampm = ""] = fmtClock(ms).split(" ");
+
+  return { hm, ampm };
+}
+
 /** "55 min" / "1 h 5 min" */
 export function fmtDuration(ms: number) {
   const m = Math.max(0, Math.round(ms / 60_000));

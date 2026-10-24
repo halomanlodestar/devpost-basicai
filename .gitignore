@@ -17,3 +17,6 @@ next-env.d.ts
 # generated
 packages/db/src/generated/
 scripts/replay/.env
+
+# design prototypes (published as artifacts, not part of the app)
+.design/

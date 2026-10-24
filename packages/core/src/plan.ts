@@ -9,7 +9,7 @@ import {
   expectedTimes,
   lateMinutes,
 } from "./predict";
-import { addDays, MIN, serviceDate } from "./time";
+import { addDays, serviceDate } from "./time";
 import type {
   Journey,
   JourneyView,
@@ -21,12 +21,6 @@ import type {
   PredictCtx,
   TripLookup,
 } from "./types";
-
-/**
- * A journey that never reported is dropped once its expected time at the stop is
- * this far behind us: trip resolution can no longer start it (spec > Trip Resolution, ±120 min).
- */
-export const NOT_STARTED_GRACE_MS = 120 * MIN;
 
 export function directPatterns(
   net: Network,
@@ -88,8 +82,8 @@ function legView(
 
   const expected = expectedTimes(ctx, journey, date);
 
-  if (!active && ctx.now - expected[leg.boardSeq]! > NOT_STARTED_GRACE_MS)
-    return null;
+  // never reported and already past due at X: the rider can't act on "might still come"
+  if (!active && expected[leg.boardSeq]! < ctx.now) return null;
 
   if (!active && superseded(ctx, trips, journey, date)) return null;
 
@@ -130,6 +124,16 @@ function journeyView(
         alightStopId: alight,
         alightStopName: ctx.net.stops.get(alight)!.name,
         alightEst,
+        stops: route.stops
+          .slice(
+            v.trip ? Math.min(v.trip.lastSeq!, leg.boardSeq) : leg.boardSeq,
+            leg.alightSeq + 1,
+          )
+          .map((rs) => ({
+            stopId: rs.stopId,
+            name: ctx.net.stops.get(rs.stopId)!.name,
+            est: v.estimated[rs.seq]!,
+          })),
       },
     ],
     beAtStopBy: boardEst - BUFFER_MS,
@@ -137,7 +141,6 @@ function journeyView(
     expectedX: v.expected[leg.boardSeq]!,
     lateMin: lateMinutes(boardEst, v.expected[leg.boardSeq]!),
     status: v.trip ? "active" : "not_started",
-    overdue: !v.trip && v.expected[leg.boardSeq]! < ctx.now,
     lastSeen:
       v.trip?.lastStopId && v.trip.lastSeenAt
         ? {
@@ -171,11 +174,7 @@ export function plan(
     )
       .map((j) => journeyView(ctx, trips, pattern, j, today))
       .filter((v): v is JourneyView => v !== null)
-      // buses we have evidence for first, nearest first; unreported past-due ones after
-      .sort(
-        (a, b) =>
-          Number(a.overdue) - Number(b.overdue) || a.beAtStopBy - b.beAtStopBy,
-      );
+      .sort((a, b) => a.beAtStopBy - b.beAtStopBy);
 
     if (journeys.length === 0) continue;
 

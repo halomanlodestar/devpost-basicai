@@ -24,7 +24,6 @@ interface StopPickerProps {
   stops: Stop[];
   value: string;
   onChange: (id: string) => void;
-  dot: "hollow" | "filled";
 }
 
 export function StopPicker({
@@ -33,7 +32,6 @@ export function StopPicker({
   stops,
   value,
   onChange,
-  dot,
 }: StopPickerProps) {
   const [open, setOpen] = useState(false);
   const selected = stops.find((s) => s.id === value);
@@ -41,34 +39,24 @@ export function StopPicker({
     <>
       <button
         type="button"
+        aria-label={selected ? `${label}: ${selected.name}` : label}
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-4 px-4 py-4 text-left"
+        className="flex h-16 w-full items-center pr-16 text-left"
       >
         <span
-          aria-hidden
           className={
-            dot === "filled"
-              ? "size-3 shrink-0 rounded-full bg-primary"
-              : "size-3 shrink-0 rounded-full border-2 border-primary bg-background"
+            selected
+              ? "truncate text-[22px] font-bold"
+              : "truncate text-[22px] font-bold text-muted-foreground/70"
           }
-        />
-        <span className="min-w-0">
-          <span className="block text-xs text-muted-foreground">{label}</span>
-          <span
-            className={
-              selected
-                ? "block truncate text-base font-medium"
-                : "block truncate text-base text-muted-foreground"
-            }
-          >
-            {selected?.name ?? placeholder}
-          </span>
+        >
+          {selected?.name ?? placeholder}
         </span>
       </button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
-          className="mx-auto h-[80dvh] max-w-[480px] rounded-t-2xl p-0"
+          className="mx-auto h-[80dvh] max-w-[480px] rounded-t-xl p-0"
         >
           <SheetHeader className="px-4 pt-4 pb-0">
             <SheetTitle>{label}</SheetTitle>

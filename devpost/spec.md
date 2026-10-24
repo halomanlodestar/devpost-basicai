@@ -117,6 +117,8 @@ Push and service workers need HTTPS, so **phone testing and the recording use th
 Submission still needs the video and the public repo. The live link is a bonus.
 
 ## Look and Feel
+**Chosen in build (UI round 3):** "Fresh + coral". Bricolage Grotesque; warm neutral surfaces; one coral accent for the route line, route chip and main button; light and dark counterparts following the phone's setting; lateness as colored words ("Late by 4 min" red, "Early by 3 min"/"On time" green). Search is a From → To rail; Results is a vertical route card plus a Later buses list; Journeys is a "Be there by" hero and a stop timeline from the bus's last-seen stop to the destination. Text is minimal, but every number keeps its unit. The notes below were the round-1 starting point.
+
 Carried from `prd.md > Look and Feel`: functional, easy on the eyes, not generic, BlaBlaCar's From → To as the reference, refined over 3–4 rounds in build. A clean starting point for round 1:
 - **Layout:** a single column, max width ~480px, centered on desktop, thumb-reachable primary actions. The Search screen is two stacked stop fields joined by a vertical line and a swap button on the right (BlaBlaCar), with a full-width Search button.
 - **Times are the hero:** large `tabular-nums` figures for "be at your stop by" and "home by", secondary text for routes and "last seen".
@@ -214,7 +216,7 @@ For a trip on journey J (route R, departure D):
 - **Late (minutes):** `round((estimated_X − expected_X) / 60)`. Positive means late, negative means early, and |late| < 2 counts as on time.
 - **Buffer (rider's favour):** "be at your stop by" = `estimated_X − 5 min`. "Arrive by" = `estimated_Y + 5 min`.
 - **Passed:** a trip with `last_seq ≥ seq(X)` has passed X and is hidden.
-- **Never reported:** a journey with no events is hidden once its bus has started a later journey. Otherwise it stays listed until its expected time at X is 120 min past (the trip-resolution window). Once past due it is `overdue`: shown as "was due … · no report yet", sorted after journeys with evidence, never an option's headline.
+- **Never reported:** a journey with no events is hidden once its bus has started a later journey, and once its expected time at X has passed (the rider can't act on "might still come"). Until then a silent bus is overdue-clamped forward.
 
 ### Planner (Route Options and Transfers)
 Implements `prd.md > Route Options (Results)` and the transfer parts of `prd.md > Journeys`. `packages/core/plan`. It works in RAPTOR-style rounds, where round k means k changes, max 2.

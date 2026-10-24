@@ -85,7 +85,7 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
   Feedback (deferred to the next UI round by the learner's choice):
   - [x] Journey row is ambiguous: "Be at your stop by 1:38" next to "There by 2:33" read as a 1-hour wait. Fixed in round 2: "Be at Raj Nagar by … · bus due ~…" / "Reaches Mohan Nagar by …", same naming on Results. (Learner to retry.)
   - [x] A never-reported, past-due bus reads as a contradiction. Learner chose (round 2): hide it once its bus has started a later journey; otherwise show it honestly as "Was due at … · no report from this bus yet", listed after buses with evidence and never an option's headline.
-- [ ] Kernel checkpoint — after slice 3: watch the demo scenario self-correct; UI round 2
+- [x] Kernel checkpoint — after slice 3: watch the demo scenario self-correct; UI round 2
   Learner ran `--scenario demo --speed 60` (15:00 and 16:00 journeys). Learned route 1 = 59.0 min vs timetable 45 (reality ~60); later buses opened corrected. Found: ghost journeys at the top, and completed trips reappearing after an API reload — both fixed (see Revisions). Awaiting the learner's look at the reworked rows.
 - [ ] On-phone checkpoint — after slice 5: deployed app with transfers on Android; UI round 3
 - [ ] Final kick-the-tires exploration and feedback completed (UI round 4)
@@ -123,3 +123,6 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Learning adopts a permanent change: 3 same-side outliers in a row become the new normal (spec > Learning). The long-run tests the learner asked for exposed that a >3× lasting slowdown (road closure) was rejected forever; `learn-long.test.ts` now covers normal days, congestion + outliers, and a closure.
 - Planner hides a never-reported journey once its bus has started a later one (it can't be running both), flags the rest as `overdue`, and sorts them after journeys with evidence; `next` is never an unreported past-due bus. Found in the learner's checkpoint-2 run.
 - API boot loads today's and yesterday's trips in every status. It used to load only non-completed trips, so after a restart a journey that had already finished came back as "not started".
+- UI identity (round 3, before deploy, learner's call): "Fresh + coral" — Bricolage Grotesque, warm neutrals, coral route accent; light and dark counterparts following the phone. Route-line layout: rail-dot search, a vertical route card on Results with Later buses as their own list, and a stop timeline on Journeys (last-seen stop → your stop → destination, a time at every stop). Prototyped on the design canvas (A/B/C directions → C themes → D); copy rule: cues replace sentences, but numbers keep units ("Late by 4 min", "2 min ago").
+- Never-reported journeys past due at X are now dropped (not shown as "no report yet"): the learner decided the rider can't act on it. Legs carry a per-stop timeline (`Leg.stops`); `JourneyView.overdue` removed.
+- Slice 7 note from the learner: the saved-commute row on Search uses a chevron, not a textual "→".

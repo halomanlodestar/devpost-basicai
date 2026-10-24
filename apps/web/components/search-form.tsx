@@ -3,7 +3,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowDownUp, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StopPicker } from "@/components/stop-picker";
@@ -20,8 +20,8 @@ export function SearchForm() {
 
   if (stops.isError)
     return (
-      <div className="rounded-2xl border bg-card p-6 text-center">
-        <p className="font-medium">Can&apos;t reach live data right now.</p>
+      <div className="rounded-xl bg-card p-6 text-center">
+        <p className="font-semibold">Can&apos;t reach live data right now.</p>
         <Button
           variant="outline"
           className="mt-4"
@@ -39,57 +39,59 @@ export function SearchForm() {
         if (canSearch)
           router.push(`/plan?${new URLSearchParams({ from, to })}`);
       }}
-      className="space-y-4"
+      className="flex flex-col gap-3.5"
     >
-      <div className="relative rounded-2xl border bg-card shadow-sm">
-        <span
+      <div className="relative grid grid-cols-[48px_minmax(0,1fr)] rounded-xl bg-card">
+        {/* the rail: hollow dot = from, filled dot = to */}
+        <div
           aria-hidden
-          className="absolute top-[2.6rem] bottom-[2.6rem] left-[1.33rem] w-px bg-border"
-        />
-        <StopPicker
-          label="From"
-          placeholder="Leaving from"
-          dot="hollow"
-          stops={stops.data ?? []}
-          value={from}
-          onChange={setFrom}
-        />
-        <div className="ml-12 border-t" />
+          className="row-span-2 flex flex-col items-center py-[26px]"
+        >
+          <span className="size-3.5 rounded-full border-[3px] border-route" />
+          <span className="my-[3px] w-1 flex-1 rounded-full bg-route" />
+          <span className="size-3.5 rounded-full bg-route" />
+        </div>
+        <div className="border-b-[1.5px] border-border">
+          <StopPicker
+            label="From"
+            placeholder="From"
+            stops={stops.data ?? []}
+            value={from}
+            onChange={setFrom}
+          />
+        </div>
         <StopPicker
           label="To"
-          placeholder="Going to"
-          dot="filled"
+          placeholder="To"
           stops={stops.data ?? []}
           value={to}
           onChange={setTo}
         />
-        <Button
+        <button
           type="button"
-          variant="outline"
-          size="icon"
           aria-label="Swap From and To"
           onClick={() => {
             setFrom(to);
             setTo(from);
           }}
-          className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-card"
+          className="absolute top-1/2 right-3 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-background transition-colors hover:bg-accent"
         >
-          <ArrowDownUp />
-        </Button>
+          <ArrowDownUp className="size-[18px]" />
+        </button>
       </div>
       {from && from === to && (
         <p className="px-1 text-sm text-muted-foreground">
           Pick two different stops.
         </p>
       )}
-      <Button
+      <button
         type="submit"
-        size="lg"
         disabled={!canSearch}
-        className="h-12 w-full rounded-xl text-base"
+        className="flex h-[60px] items-center justify-center gap-1.5 rounded-lg bg-primary text-lg font-bold text-primary-foreground transition-opacity disabled:opacity-40"
       >
-        Search
-      </Button>
+        Find buses
+        <ChevronRight className="size-5" strokeWidth={2.6} />
+      </button>
     </form>
   );
 }

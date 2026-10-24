@@ -152,6 +152,7 @@ Source: `scope.md > What "Working" Looks Like`.
 ## Possible Later Enhancements
 - Real UPSRTC ticket-machine integration (same signing contract, so a real device is a drop-in).
 - Rider-configurable alert thresholds.
+- **Localization:** Hindi stop names and UI (bilingual English/Hindi). Prototyped during `5-build` UI round 3 and deferred by the learner as future scope.
 - Showing "Timetable · Usually · Now" side by side on a journey (suggested, not adopted for now).
 
 ## Non-Goals

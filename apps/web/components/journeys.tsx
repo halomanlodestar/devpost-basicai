@@ -3,9 +3,13 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { JourneyRow } from "@/components/journey-row";
+import { Clock } from "@/components/clock";
+import { JourneyTimeline } from "@/components/journey-timeline";
+import { LateLabel } from "@/components/late-label";
+import { LaterBuses } from "@/components/later-buses";
 import { PlanHeader } from "@/components/plan-header";
 import { PlanFallback } from "@/components/plan-state";
+import { RouteChip } from "@/components/route-chip";
 import { useNow } from "@/hooks/use-now";
 import { usePlan } from "@/hooks/use-plan";
 
@@ -21,33 +25,43 @@ export function Journeys() {
     query.data?.kind === "ok"
       ? query.data.options.find((o) => o.id === decodeURIComponent(optionId))
       : undefined;
+  const j = option?.next;
 
   return (
-    <>
-      <PlanHeader
-        from={from}
-        to={to}
-        back={back}
-        reconnecting={query.reconnecting}
-      />
-      {option ? (
+    <div className="flex flex-col gap-6">
+      <PlanHeader back={back} reconnecting={query.reconnecting}>
+        {option?.routes.map((r) => (
+          <RouteChip key={r} name={r} />
+        ))}
+      </PlanHeader>
+      {option && j ? (
         <>
-          <p className="mb-3 text-sm text-muted-foreground">
-            Bus {option.routes.join(" → ")}
-          </p>
-          <ul className="space-y-3">
-            {option.journeys.map((j) => (
-              <JourneyRow key={j.id} j={j} now={now} />
-            ))}
-          </ul>
+          <section className="flex flex-col gap-1.5">
+            <span className="text-[15px] font-semibold text-muted-foreground">
+              Be there by
+            </span>
+            <Clock
+              ms={j.beAtStopBy}
+              className="text-[68px] leading-[.95] font-extrabold"
+            />
+            {j.status === "active" ? (
+              <LateLabel lateMin={j.lateMin} className="mt-1.5 text-base" />
+            ) : (
+              <span className="mt-1.5 text-base font-semibold text-muted-foreground">
+                Not started yet
+              </span>
+            )}
+          </section>
+          <JourneyTimeline journey={j} now={now} />
+          <LaterBuses journeys={option.journeys.slice(1, 2)} title="Next bus" />
         </>
       ) : query.data?.kind === "ok" ? (
         <p className="py-10 text-center text-muted-foreground">
-          No more buses on this option today.
+          No more buses on this route today.
         </p>
       ) : (
         <PlanFallback query={query} from={from} to={to} />
       )}
-    </>
+    </div>
   );
 }
