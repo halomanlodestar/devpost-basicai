@@ -29,7 +29,12 @@ export function Journeys() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PlanHeader back={back} reconnecting={query.reconnecting}>
+      <PlanHeader
+        back={back}
+        from={from}
+        to={to}
+        reconnecting={query.reconnecting}
+      >
         {option?.routes.map((r) => (
           <RouteChip key={r} name={r} />
         ))}

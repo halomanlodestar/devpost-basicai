@@ -46,12 +46,7 @@ export function OptionCard({ option, href, now }: OptionCardProps) {
           aria-hidden
           className="size-3.5 justify-self-center rounded-full border-[3px] border-route"
         />
-        <div className="flex flex-col">
-          <span className="text-[17px] font-bold">{first.boardStopName}</span>
-          <span className="text-xs font-semibold text-muted-foreground">
-            Be there by
-          </span>
-        </div>
+        <span className="text-[17px] font-bold">{first.boardStopName}</span>
         <Clock
           ms={j.beAtStopBy}
           className="text-[36px] leading-none font-extrabold"
@@ -70,12 +65,7 @@ export function OptionCard({ option, href, now }: OptionCardProps) {
           aria-hidden
           className="size-3.5 justify-self-center rounded-full bg-route"
         />
-        <div className="flex flex-col">
-          <span className="text-[17px] font-bold">{last.alightStopName}</span>
-          <span className="text-xs font-semibold text-muted-foreground">
-            Arrive
-          </span>
-        </div>
+        <span className="text-[17px] font-bold">{last.alightStopName}</span>
         <Clock ms={j.arriveBy} className="text-[28px] leading-none font-bold" />
       </div>
 
