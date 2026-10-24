@@ -94,7 +94,7 @@ const emitters = buses.map((b) => ({
 
 await db.$transaction([
   db.$executeRawUnsafe(
-    `TRUNCATE "trip", "journey", "emitter", "bus", "route_stop", "route", "segment", "stop" CASCADE`,
+    `TRUNCATE "ticket_event", "trip", "journey", "emitter", "bus", "route_stop", "route", "segment", "stop" CASCADE`,
   ),
   db.stop.createMany({
     data: stopNames.map((name) => ({ id: stopId(name), name })),

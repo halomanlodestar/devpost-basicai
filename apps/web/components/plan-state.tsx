@@ -2,18 +2,13 @@
 
 "use client";
 
-import type { PlanResult } from "@app/core/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { fmtClock } from "@/lib/time";
+import type { PlanState } from "@/types/plan";
 
 interface PlanFallbackProps {
-  query: {
-    isPending: boolean;
-    isError: boolean;
-    refetch: () => unknown;
-    data?: PlanResult;
-  };
+  query: PlanState;
   from: string;
   to: string;
 }

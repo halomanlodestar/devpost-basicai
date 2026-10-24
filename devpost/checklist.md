@@ -9,7 +9,7 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
 
 ## Slices
 
-- [ ] **1. Search College → Home and see today's direct journeys (timetable-based)**
+- [x] **1. Search College → Home and see today's direct journeys (timetable-based)**
   Becomes usable: A running web app on localhost: pick From and To, tap Search, see direct route options and their journeys, nearest first, with "not started · expected [time]", be-at-stop-by (−5) and arrive-by (+5). Times come from the seeded timetable because no bus has reported yet.
   Why now: Bootstraps everything (Bun workspace, Prisma on Postgres, `Bun.serve` + tRPC fetch adapter, Next.js + shadcn) on the thinnest real behavior, and runs the spec's Bun-compatibility checks (Prisma adapter, BullMQ/ioredis, web-push) before anything depends on them. Gives UI round 1 something to react to.
   PRD ref: `prd.md > The Core Journey` (steps 1–4), `prd.md > Stop Search`, `prd.md > Route Options (Results)` (direct only), `prd.md > Journeys` (not-started rows), `prd.md > Look and Feel`
@@ -113,3 +113,6 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - `no_route` / `no_more_today` states built in slice 1 for direct routes (planner needed an answer for them); slice 5 extends them to transfers.
 - API dev script runs from the repo root (`--env-file=apps/api/.env`) so `bun --watch` also reloads on `packages/*` edits.
 - Architecture rule from the learner: types live only in `types/` folders (`src/types/` in core, db, api; `types/` in web, except component Props), interfaces over type aliases (unions/derived aliases stay `type`). `@app/api` now exports only its types; `@app/core/types` is the shared type entry.
+- Trip resolution gained a fifth outcome, `stale`: an event older than the active trip's anchor is stored against that trip but moves nothing. Without it, an out-of-order event at an earlier stop fell through to "start a trip" and could wrongly start the bus's return journey.
+- Ingest's signature/dedupe/flush checks are pure tests in `packages/core/test/resolve.test.ts` (no test database); the HTTP path is verified live with the replay script. `apps/api/test/` stays empty for now.
+- The web app reads only `plan.watch` (the first SSE message is the first paint); `plan.search` stays as a plain query for scripts and debugging.

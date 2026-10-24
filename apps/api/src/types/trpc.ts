@@ -1,10 +1,12 @@
 /** @format */
 
 import type { appRouter } from "../trpc/router";
+import type { Hub } from "../hub";
 import type { State } from "./state";
 
 export interface Deps {
   state: State;
+  hub: Hub;
   tz: string;
 }
 

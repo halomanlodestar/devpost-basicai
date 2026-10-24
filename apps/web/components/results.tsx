@@ -22,7 +22,12 @@ export function Results() {
 
   return (
     <>
-      <PlanHeader from={from} to={to} back="/" />
+      <PlanHeader
+        from={from}
+        to={to}
+        back="/"
+        reconnecting={query.reconnecting}
+      />
       {query.data?.kind === "ok" ? (
         <ul className="space-y-3">
           {query.data.options.map((o) => (

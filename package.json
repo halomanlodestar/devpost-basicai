@@ -10,7 +10,7 @@
     "db:migrate": "bun run --filter '@app/db' migrate",
     "db:seed": "bun run --filter '@app/db' seed",
     "db:reset-learning": "bun run --filter '@app/db' reset-learning",
-    "replay": "bun run --filter '@app/replay' replay"
+    "replay": "bun --env-file=scripts/replay/.env scripts/replay/index.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.4.4",

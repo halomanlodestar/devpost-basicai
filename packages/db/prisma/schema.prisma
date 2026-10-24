@@ -69,12 +69,13 @@ model Bus {
 }
 
 model Emitter {
-  id        String    @id
-  busId     String    @map("bus_id")
+  id        String        @id
+  busId     String        @map("bus_id")
   /// AES-256-GCM with EMITTER_KEY_ENC_KEY; HMAC verification needs the secret itself
-  secretEnc String    @map("secret_enc")
-  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
-  bus       Bus       @relation(fields: [busId], references: [id])
+  secretEnc String        @map("secret_enc")
+  revokedAt DateTime?     @map("revoked_at") @db.Timestamptz(3)
+  bus       Bus           @relation(fields: [busId], references: [id])
+  events    TicketEvent[]
 
   @@map("emitter")
 }
@@ -106,17 +107,36 @@ enum TripStatus {
 
 /// A journey on one service day. Created lazily by ingest.
 model Trip {
-  id          String     @id @default(cuid())
-  journeyId   String     @map("journey_id")
+  id          String        @id @default(cuid())
+  journeyId   String        @map("journey_id")
   /// YYYY-MM-DD in the service time zone
-  serviceDate String     @map("service_date")
-  status      TripStatus @default(scheduled)
-  lastSeq     Int?       @map("last_seq")
-  lastStopId  String?    @map("last_stop_id")
-  anchorAt    DateTime?  @map("anchor_at") @db.Timestamptz(3)
-  lastSeenAt  DateTime?  @map("last_seen_at") @db.Timestamptz(3)
-  journey     Journey    @relation(fields: [journeyId], references: [id])
+  serviceDate String        @map("service_date")
+  status      TripStatus    @default(scheduled)
+  lastSeq     Int?          @map("last_seq")
+  lastStopId  String?       @map("last_stop_id")
+  anchorAt    DateTime?     @map("anchor_at") @db.Timestamptz(3)
+  lastSeenAt  DateTime?     @map("last_seen_at") @db.Timestamptz(3)
+  journey     Journey       @relation(fields: [journeyId], references: [id])
+  events      TicketEvent[]
 
   @@unique([journeyId, serviceDate])
   @@map("trip")
+}
+
+/// Append-only. The source of truth: trip state and learned times can be rebuilt by folding it.
+model TicketEvent {
+  id             String   @id @default(cuid())
+  emitterId      String   @map("emitter_id")
+  idempotencyKey String   @map("idempotency_key")
+  tripId         String?  @map("trip_id")
+  stopId         String   @map("stop_id")
+  /// device clock: when the ticket was cut
+  occurredAt     DateTime @map("occurred_at") @db.Timestamptz(3)
+  receivedAt     DateTime @default(now()) @map("received_at") @db.Timestamptz(3)
+  emitter        Emitter  @relation(fields: [emitterId], references: [id])
+  trip           Trip?    @relation(fields: [tripId], references: [id])
+
+  @@unique([emitterId, idempotencyKey])
+  @@index([tripId, occurredAt])
+  @@map("ticket_event")
 }

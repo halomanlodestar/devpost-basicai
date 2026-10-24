@@ -24,7 +24,12 @@ export function Journeys() {
 
   return (
     <>
-      <PlanHeader from={from} to={to} back={back} />
+      <PlanHeader
+        from={from}
+        to={to}
+        back={back}
+        reconnecting={query.reconnecting}
+      />
       {option ? (
         <>
           <p className="mb-3 text-sm text-muted-foreground">

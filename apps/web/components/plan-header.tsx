@@ -11,9 +11,10 @@ interface PlanHeaderProps {
   from: string;
   to: string;
   back: string;
+  reconnecting?: boolean;
 }
 
-export function PlanHeader({ from, to, back }: PlanHeaderProps) {
+export function PlanHeader({ from, to, back, reconnecting }: PlanHeaderProps) {
   const trpc = useTRPC();
   const stops = useQuery(trpc.stops.list.queryOptions());
   const name = (id: string) =>
@@ -30,6 +31,11 @@ export function PlanHeader({ from, to, back }: PlanHeaderProps) {
       <h1 className="min-w-0 truncate text-lg font-semibold">
         {name(from)} <span className="text-muted-foreground">→</span> {name(to)}
       </h1>
+      {reconnecting && (
+        <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+          reconnecting…
+        </span>
+      )}
     </header>
   );
 }

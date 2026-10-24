@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "replay": "bun index.ts",
+    "replay": "bun --env-file=.env index.ts",
     "typecheck": "tsc -p ."
   },
   "dependencies": {
