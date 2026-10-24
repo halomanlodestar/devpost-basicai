@@ -11,6 +11,7 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "@leeoniya/ufuzzy": "^1.0.19",
     "zod": "^4.6.7"
   }
 }

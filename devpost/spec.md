@@ -28,7 +28,7 @@ There are two deployables in one Bun workspace.
 ## The Core Journey Through the System
 PRD ref: `prd.md > The Core Journey`.
 
-1. **Rider opens the app.** Next.js serves the Search screen. `stops.list` (tRPC query) returns every stop from the API's in-memory network, and the stop pickers filter it client-side.
+1. **Rider opens the app.** Next.js serves the Search screen. Tapping From or To opens a full-screen search; `stops.search` (tRPC query, debounced as they type) returns up to 8 fuzzy-ranked stops from the API's in-memory network.
 2. **Rider picks College → Home and taps Search.** The web app opens the `plan.watch({ from, to })` **tRPC subscription** (SSE). The API's planner (`packages/core/plan`):
    - finds the route patterns connecting the two stops (direct first, then 1 change, then 2);
    - attaches today's catchable journeys to each, with predicted times;
@@ -293,7 +293,8 @@ Implements `prd.md > Accounts` and the Sign in screen.
 
 | Procedure | Kind | Auth | Serves |
 |---|---|---|---|
-| `stops.list` | query | public | Stop Search |
+| `stops.search({q, limit?})` | query | public | Stop Search: ≤8 ranked fuzzy matches as the rider types (uFuzzy in memory) |
+| `stops.byIds({ids})` | query | public | stop names for ids already in the URL |
 | `plan.search({from,to})` | query | public | first paint and fallback |
 | `plan.watch({from,to})` | subscription (SSE) | public | Results and Journeys live |
 | `alerts.create` / `alerts.cancel` / `alerts.mine` | mutation / mutation / query | user | Notify me |

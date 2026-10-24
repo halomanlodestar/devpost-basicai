@@ -7,5 +7,6 @@ export * from "./plan";
 export * from "./predict";
 export * from "./resolve";
 export * from "./schemas";
+export * from "./search";
 export * from "./time";
 export type * from "./types";

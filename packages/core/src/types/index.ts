@@ -6,5 +6,6 @@ export type * from "./learn";
 
 export type * from "./network";
 export type * from "./plan";
+export type * from "./search";
 export type * from "./predict";
 export type * from "./time";

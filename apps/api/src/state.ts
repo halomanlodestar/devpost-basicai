@@ -1,6 +1,11 @@
 /** @format */
 
-import { addDays, buildNetwork, serviceDate } from "@app/core";
+import {
+  addDays,
+  buildNetwork,
+  createStopSearch,
+  serviceDate,
+} from "@app/core";
 import type { StatBucket, StatsStore } from "@app/core/types";
 import type { Db } from "@app/db";
 import type { State } from "./types";
@@ -53,6 +58,7 @@ export async function loadState(db: Db, tz: string): Promise<State> {
 
   return {
     net,
+    searchStops: createStopSearch(stops),
     trips: new Map(
       trips.map((t) => [
         tripKey(t.journeyId, t.serviceDate),

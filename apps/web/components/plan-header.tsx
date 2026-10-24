@@ -27,7 +27,7 @@ export function PlanHeader({
 }: PlanHeaderProps) {
   const trpc = useTRPC();
   const stops = useQuery({
-    ...trpc.stops.list.queryOptions(),
+    ...trpc.stops.byIds.queryOptions({ ids: [from ?? "", to ?? ""] }),
     enabled: Boolean(from && to),
   });
   const name = (id: string) =>
