@@ -9,3 +9,114 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ── Network ──────────────────────────────────────────────
+
+model Stop {
+  id         String      @id
+  name       String
+  routeStops RouteStop[]
+
+  @@map("stop")
+}
+
+/// One per direction.
+model Route {
+  id          String      @id
+  name        String
+  reverseOfId String?     @map("reverse_of_id")
+  reverseOf   Route?      @relation("Reverse", fields: [reverseOfId], references: [id])
+  reverses    Route[]     @relation("Reverse")
+  stops       RouteStop[]
+  journeys    Journey[]
+
+  @@map("route")
+}
+
+model RouteStop {
+  routeId   String @map("route_id")
+  seq       Int
+  stopId    String @map("stop_id")
+  /// timetable minutes from departure
+  offsetMin Int    @map("offset_min")
+  route     Route  @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stop      Stop   @relation(fields: [stopId], references: [id])
+
+  @@id([routeId, seq])
+  @@index([stopId, routeId, seq])
+  @@map("route_stop")
+}
+
+/// Directed stop-to-stop edge, derived from consecutive route stops.
+model Segment {
+  id         String @id @default(cuid())
+  fromStopId String @map("from_stop_id")
+  toStopId   String @map("to_stop_id")
+
+  @@unique([fromStopId, toStopId])
+  @@map("segment")
+}
+
+// ── Fleet / trust ────────────────────────────────────────
+
+model Bus {
+  id       String    @id
+  regNo    String    @unique @map("reg_no")
+  emitters Emitter[]
+  journeys Journey[]
+
+  @@map("bus")
+}
+
+model Emitter {
+  id        String    @id
+  busId     String    @map("bus_id")
+  /// AES-256-GCM with EMITTER_KEY_ENC_KEY; HMAC verification needs the secret itself
+  secretEnc String    @map("secret_enc")
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  bus       Bus       @relation(fields: [busId], references: [id])
+
+  @@map("emitter")
+}
+
+// ── Operations ───────────────────────────────────────────
+
+/// A timetabled departure; repeats every service day.
+model Journey {
+  id           String @id
+  routeId      String @map("route_id")
+  busId        String @map("bus_id")
+  /// minutes after midnight, service time zone
+  departureMin Int    @map("departure_min")
+  route        Route  @relation(fields: [routeId], references: [id])
+  bus          Bus    @relation(fields: [busId], references: [id])
+  trips        Trip[]
+
+  @@index([busId, departureMin])
+  @@map("journey")
+}
+
+enum TripStatus {
+  scheduled
+  active
+  completed
+
+  @@map("trip_status")
+}
+
+/// A journey on one service day. Created lazily by ingest.
+model Trip {
+  id          String     @id @default(cuid())
+  journeyId   String     @map("journey_id")
+  /// YYYY-MM-DD in the service time zone
+  serviceDate String     @map("service_date")
+  status      TripStatus @default(scheduled)
+  lastSeq     Int?       @map("last_seq")
+  lastStopId  String?    @map("last_stop_id")
+  anchorAt    DateTime?  @map("anchor_at") @db.Timestamptz(3)
+  lastSeenAt  DateTime?  @map("last_seen_at") @db.Timestamptz(3)
+  journey     Journey    @relation(fields: [journeyId], references: [id])
+
+  @@unique([journeyId, serviceDate])
+  @@map("trip")
+}

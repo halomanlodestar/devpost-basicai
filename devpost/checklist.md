@@ -5,7 +5,7 @@ status: approved
 
 # Build Checklist
 
-Build mode: [learn or fast — record once chosen; carry forward on resume]
+Build mode: fast — the learner reviews and commits each slice themselves (their commit is their sign-off); the agent builds, verifies, hands over, and ticks the box only after their commit.
 
 ## Slices
 
@@ -81,7 +81,10 @@ Build mode: [learn or fast — record once chosen; carry forward on resume]
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 1 (UI round 1 on Search/Results/Journeys)
+- [x] Early usable behavior explored — after slice 1 (UI round 1 on Search/Results/Journeys)
+  Feedback (deferred to the next UI round by the learner's choice):
+  - [ ] Journey row is ambiguous: "Be at your stop by 1:38" next to "There by 2:33" read as a 1-hour wait. Name both stops ("Bus at ABES College ~1:43 · be there by 1:38" / "Reaches Mohan Nagar ~2:33") and show the bus estimate beside the buffered time.
+  - [ ] A never-reported, past-due bus reads as a contradiction ("not started · expected 12:00" next to 1:38). Decide: show honestly ("was due 12:00, no report yet") or hide once past due. Open product decision for the learner.
 - [ ] Kernel checkpoint — after slice 3: watch the demo scenario self-correct; UI round 2
 - [ ] On-phone checkpoint — after slice 5: deployed app with transfers on Android; UI round 3
 - [ ] Final kick-the-tires exploration and feedback completed (UI round 4)
@@ -105,3 +108,8 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 ## Revisions
 
 - Dropped Hono; the API uses `Bun.serve` routes with tRPC's fetch adapter and a small `withCors` helper — all three handlers already speak `Request`/`Response`, and the learner prefers no extra deps unless necessary.
+- Dropped `ioredis` as a direct dependency — BullMQ bundles its own Redis client, so it was redundant.
+- A journey that never reported is shown (overdue-clamped to now) until its expected time at X is 120 min past, then hidden — the spec defined "passed" only for active trips; 120 min matches the trip-resolution window, after which no event can start it. Open for the learner at checkpoint 1.
+- `no_route` / `no_more_today` states built in slice 1 for direct routes (planner needed an answer for them); slice 5 extends them to transfers.
+- API dev script runs from the repo root (`--env-file=apps/api/.env`) so `bun --watch` also reloads on `packages/*` edits.
+- Architecture rule from the learner: types live only in `types/` folders (`src/types/` in core, db, api; `types/` in web, except component Props), interfaces over type aliases (unions/derived aliases stay `type`). `@app/api` now exports only its types; `@app/core/types` is the shared type entry.

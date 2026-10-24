@@ -2,12 +2,13 @@
 
 import { initTRPC } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
+import type { Context, Deps } from "../types";
 
-export function createContext({ req }: FetchCreateContextFnOptions) {
-  return { req };
+export function makeCreateContext(deps: Deps) {
+  return ({ req }: FetchCreateContextFnOptions): Context => ({ req, ...deps });
 }
 
-const t = initTRPC.context<typeof createContext>().create({
+const t = initTRPC.context<Context>().create({
   sse: { ping: { enabled: true, intervalMs: 15_000 } },
 });
 

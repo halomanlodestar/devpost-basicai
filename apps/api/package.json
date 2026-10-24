@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/trpc/router.ts"
+    ".": "./src/types/index.ts"
   },
   "scripts": {
-    "dev": "bun --watch src/index.ts",
+    "dev": "cd ../.. && bun --watch --env-file=apps/api/.env apps/api/src/index.ts",
     "start": "bun src/index.ts",
     "typecheck": "tsc -p ."
   },

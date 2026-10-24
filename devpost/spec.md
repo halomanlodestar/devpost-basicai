@@ -213,6 +213,7 @@ For a trip on journey J (route R, departure D):
 - **Late (minutes):** `round((estimated_X − expected_X) / 60)`. Positive means late, negative means early, and |late| < 2 counts as on time.
 - **Buffer (rider's favour):** "be at your stop by" = `estimated_X − 5 min`. "Arrive by" = `estimated_Y + 5 min`.
 - **Passed:** a trip with `last_seq ≥ seq(X)` has passed X and is hidden.
+- **Never reported:** a journey with no events stays listed (overdue-clamped) until its expected time at X is 120 min past (the trip-resolution window), then it is hidden.
 
 ### Planner (Route Options and Transfers)
 Implements `prd.md > Route Options (Results)` and the transfer parts of `prd.md > Journeys`. `packages/core/plan`. It works in RAPTOR-style rounds, where round k means k changes, max 2.
