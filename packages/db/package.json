@@ -12,7 +12,8 @@
     "migrate": "bun --bun prisma migrate dev",
     "seed": "bun prisma/seed.ts",
     "reset-learning": "bun prisma/reset-learning.ts",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "migrate:deploy": "bun --bun prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
