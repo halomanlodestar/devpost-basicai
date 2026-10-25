@@ -18,7 +18,6 @@ const Env = z.object({
         .filter(Boolean),
     )
     .pipe(z.array(z.url()).min(1)),
-  EMITTER_KEY_ENC_KEY: z.string().regex(/^[0-9a-f]{64}$/, "32 bytes, hex"),
   VAPID_PUBLIC_KEY: z.string(),
   VAPID_PRIVATE_KEY: z.string(),
   VAPID_SUBJECT: z.string(),

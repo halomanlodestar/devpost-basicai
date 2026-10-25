@@ -6,7 +6,6 @@
 import { randomBytes } from "node:crypto";
 import { join } from "node:path";
 import { createDb } from "../src";
-import { encryptSecret } from "../src/secret";
 import type {
   SeedBus,
   SeedJourney,
@@ -17,9 +16,7 @@ import type {
 import { LAST_DEPARTURE_HOUR, ROUTES, stopId } from "./network";
 
 const DATABASE_URL = process.env.DATABASE_URL;
-const ENC_KEY = process.env.EMITTER_KEY_ENC_KEY;
-if (!DATABASE_URL || !ENC_KEY)
-  throw new Error("DATABASE_URL and EMITTER_KEY_ENC_KEY are required");
+if (!DATABASE_URL) throw new Error("DATABASE_URL is required");
 
 const db = createDb(DATABASE_URL);
 
@@ -126,11 +123,7 @@ await db.$transaction([
   }),
   db.bus.createMany({ data: buses }),
   db.emitter.createMany({
-    data: emitters.map(({ id, busId, secret }) => ({
-      id,
-      busId,
-      secretEnc: encryptSecret(secret, ENC_KEY),
-    })),
+    data: emitters,
   }),
   db.journey.createMany({ data: journeys }),
 ]);

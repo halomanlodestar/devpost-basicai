@@ -14,6 +14,7 @@
     "db:migrate": "bun run --filter '@app/db' migrate",
     "db:seed": "bun run --filter '@app/db' seed",
     "db:reset-learning": "bun run --filter '@app/db' reset-learning",
+    "db:rekey": "bun run --filter '@app/db' rekey",
     "replay": "bun --env-file=scripts/replay/.env scripts/replay/index.ts",
     "deploy:api": "bun scripts/deploy/deploy-api.ts",
     "db:migrate:deploy": "bun run --filter '@app/db' migrate:deploy"

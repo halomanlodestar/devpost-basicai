@@ -4,7 +4,6 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./secret": "./src/secret.ts",
     "./network": "./prisma/network.ts"
   },
   "scripts": {
@@ -12,6 +11,7 @@
     "migrate": "bun --bun prisma migrate dev",
     "seed": "bun prisma/seed.ts",
     "reset-learning": "bun prisma/reset-learning.ts",
+    "rekey": "bun prisma/rekey.ts",
     "typecheck": "tsc -p .",
     "migrate:deploy": "bun --bun prisma migrate deploy"
   },

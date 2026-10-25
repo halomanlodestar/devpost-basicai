@@ -99,8 +99,8 @@ model Bus {
 model Emitter {
   id        String        @id
   busId     String        @map("bus_id")
-  /// AES-256-GCM with EMITTER_KEY_ENC_KEY; HMAC verification needs the secret itself
-  secretEnc String        @map("secret_enc")
+  /// HMAC key for this device. Plain text: demo scope (encrypting it at rest is future scope)
+  secret    String
   revokedAt DateTime?     @map("revoked_at") @db.Timestamptz(3)
   bus       Bus           @relation(fields: [busId], references: [id])
   events    TicketEvent[]

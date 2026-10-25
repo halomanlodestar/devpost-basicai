@@ -17,11 +17,10 @@ export function ingestHandler(
   hub: Hub,
   alerts: AlertScheduler,
   tz: string,
-  encKey: string,
 ) {
   return async (req: Request) => {
     const raw = await req.text();
-    const emitter = await verifyRequest(db, req, raw, encKey);
+    const emitter = await verifyRequest(db, req, raw);
 
     if (!emitter)
       return Response.json({ error: "invalid signature" }, { status: 401 });

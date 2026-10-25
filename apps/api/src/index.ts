@@ -47,7 +47,6 @@ const server = Bun.serve({
         hub,
         alerts,
         env.TZ_SERVICE,
-        env.EMITTER_KEY_ENC_KEY,
       ),
     },
   },

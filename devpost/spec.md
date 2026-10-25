@@ -89,7 +89,6 @@ The two subdomains are the same site, so cookies work as normal first-party cook
 `apps/api/.env`:
 - `DATABASE_URL`, `REDIS_URL`
 - `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `WEB_ORIGIN`
-- `EMITTER_KEY_ENC_KEY` (32-byte key that encrypts emitter secrets at rest)
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 - `TZ_SERVICE=Asia/Kolkata`
 
@@ -150,7 +149,7 @@ Implements `prd.md > Ticket Events (background, no UI)`.
 - **Response:** `200 { "accepted": n, "duplicates": n, "unassigned": n }` · `401` bad or missing signature, revoked emitter, or `X-Timestamp` more than 5 min from server time (send-time replay window; `occurredAt` can be hours old) · `400` schema.
 
 **Steps:**
-1. Verify the signature with constant-time compare. The emitter secret is decrypted from `emitter.secret_enc`.
+1. Verify the signature with constant-time compare. The emitter secret is read from `emitter.secret`.
 2. Sort the batch by `occurredAt`.
 3. For each event:
    - `INSERT … ON CONFLICT (emitter_id, idempotency_key) DO NOTHING`; a duplicate stops here.
@@ -343,7 +342,7 @@ Implements `prd.md > Demo Replay (script, not product)`. `scripts/replay`:
 | `segment` | `id, from_stop_id, to_stop_id` | unique (from, to). Derived from consecutive route_stops at seed time |
 | `segment_stat` | `segment_id, bucket, typical_sec, samples, rejected` | PK (segment_id, bucket). bucket ∈ am_peak, midday, pm_peak, off, all |
 | `bus` | `id`, `reg_no` | |
-| `emitter` | `id, bus_id, secret_enc, revoked_at?` | secret **encrypted** (AES-GCM, `EMITTER_KEY_ENC_KEY`), not hashed, because HMAC verification needs the secret |
+| `emitter` | `id, bus_id, secret, revoked_at?` | secret stored as-is, not hashed, because HMAC verification needs it; encrypting it at rest is future scope |
 | `journey` | `id, route_id, bus_id, departure_min` | the timetabled departure (minutes after midnight IST). Mandatory timetable (`prd.md > Product Decisions`) |
 | `trip` | `id, journey_id, service_date, status, last_seq?, last_stop_id?, anchor_at?, last_seen_at?` | unique (journey_id, service_date). Created lazily |
 | `ticket_event` | `id, emitter_id, idempotency_key, trip_id?, stop_id, occurred_at, received_at` | **append-only**, unique (emitter_id, idempotency_key), index (trip_id, occurred_at) |
@@ -473,7 +472,7 @@ How this grows without a rewrite, each step a deploy change thanks to the worksp
 5. ~~Hono as the API's HTTP layer~~ → replaced in `5-build` planning by plain `Bun.serve` routes (learner: "no need for additional deps unless necessary").
 
 ### Corrections to earlier docs
-- `scope.md` listed `emitter.secret_hash`. HMAC verification needs the actual secret, so it is stored **encrypted at rest**, not hashed.
+- `scope.md` listed `emitter.secret_hash`. HMAC verification needs the actual secret, so it is stored as-is, not hashed. (It was first encrypted at rest with AES-GCM; dropped during slice 6, see checklist Revisions.)
 - `scope.md` listed `trip.last_seq/last_seen_at`; `anchor_at` was added (the first event at the current stop) so dwell doesn't skew the estimate.
 - `scope.md` said "Admins must sign in"; with no admin panel, there are no admin accounts.
 
