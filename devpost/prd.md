@@ -3,7 +3,7 @@ doc: prd
 status: approved
 ---
 
-# [Name TBD]: Product Requirements
+# On the way: Product Requirements
 
 A phone-first rider app that tells a day scholar when the next bus from stop X will get them to stop Y, using predictions learned from conductors' ticket events instead of a static timetable.
 Source: `scope.md > The Unique Kernel`, `scope.md > The Core Loop`.
@@ -147,6 +147,7 @@ Source: `scope.md > What "Working" Looks Like`.
 - Seed data and the demo replay script.
 
 ## Deferred From the POC
+- **Saved commutes / recurring daily alerts (slice 7):** deferred by the learner during `5-build`. The story is "carry on with your day; the app tells you when to leave", so the one-journey reminder (slice 6) matters more; recurring commutes come after.
 - **Admin panel** for routes, journeys, buses and emitter keys: seeded via SQL for now and built only if the demo needs it.
 
 ## Possible Later Enhancements
@@ -162,4 +163,4 @@ Source: `scope.md > What "Working" Looks Like`.
 - **Simulator UI:** the demo is driven by a script.
 
 ## Open Questions
-1. **Product name** *(can wait until `6-ship`)*.
+1. ~~Product name~~ → decided in `5-build`: **On the way** (tab title, header, PWA manifest and install name; domain stays `basics.smartabeshackathon.tech`).

@@ -25,6 +25,6 @@ export const planRouter = router({
     signal,
   }) {
     assertStops(ctx, input.from, input.to);
-    yield* ctx.hub.watch(input.from, input.to, signal);
+    yield* ctx.hub.watchPlan(input.from, input.to, signal);
   }),
 });

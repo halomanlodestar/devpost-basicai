@@ -1,5 +1,5 @@
 /**
- * One row of the journey timeline, flattened across every leg.
+ * One stop on the journey timeline, flattened across every leg.
  *
  * @format
  */
@@ -8,18 +8,24 @@ export interface TimelineStop {
   kind: "bus" | "board" | "stop" | "change" | "end";
   stopId: string;
   name: string;
-  /** clock shown on the left: bus arrival, or "arrive by" at the end */
+  /** clock on the left: the bus's time there, or "arrive by" at the end */
   at: number;
-}
-
-/** The wait at a change stop before the next bus. */
-export interface TimelineWait {
-  kind: "wait";
-  stopId: string;
-  waitMin: number;
-  /** next bus's route name and when it leaves the change stop */
+  /** the route this stop is ridden on (its color) */
   routeName: string;
-  departs: number;
+  /** before the rider boards: the bus's way to them, drawn faded */
+  beforeBoard: boolean;
+  /** change rows: the next route and the wait for it */
+  nextRouteName?: string;
+  waitMin?: number;
 }
 
-export type TimelineRow = TimelineStop | TimelineWait;
+/** The next bus leaving the change stop. */
+export interface TimelineDepart {
+  kind: "depart";
+  stopId: string;
+  at: number;
+  routeName: string;
+  beforeBoard: false;
+}
+
+export type TimelineRow = TimelineStop | TimelineDepart;

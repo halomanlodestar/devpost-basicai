@@ -3,7 +3,7 @@ doc: scope
 status: approved
 ---
 
-# [Name TBD]: Ticket-Driven Bus ETAs
+# On the way: Ticket-Driven Bus ETAs
 
 Tells a day scholar how long until their bus reaches their stop, using the ticket machine the conductor already carries instead of GPS.
 

@@ -6,6 +6,7 @@ The points to hit in the demo video and the Devpost write-up. These are added as
 - **Born from a real commute.** As a 1st-year day scholar on UPSRTC buses: no reliable schedule, no tracker, and waits of up to an hour unless you called the conductor. "It was either now or never."
 
 ## The idea
+- **Name: "On the way."** Don't bend your day around the bus: carry on with your work, and the app tells you when to leave.
 - **The ticket machine is the GPS.** Every ticket the conductor cuts is a "bus at stop Y, time T" event. No GPS hardware, no new devices, only one HTTP call from something conductors already carry.
 - **Riders need a wait time, not a moving dot.** Everything is in stops and time. No lat/long, no map.
 - **No timetable needed, and it corrects itself.** It starts from the "expected" schedule and learns real stop-to-stop times from its own history. *Demo: fast-forward replay shows the ETAs pulling away from the timetable toward reality.*

@@ -2,6 +2,7 @@
 
 // The kernel: network, resolve, learn, predict, plan. Pure TS, no I/O.
 export * from "./learn";
+export * from "./line";
 export * from "./network";
 export * from "./plan";
 export * from "./predict";

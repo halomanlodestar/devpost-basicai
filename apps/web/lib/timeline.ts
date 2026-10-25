@@ -3,10 +3,11 @@
 import type { JourneyView } from "@app/core/types";
 import type { TimelineRow } from "@/types/timeline";
 
-/** Every leg's stops as one list: last-seen bus → your stop → (change, wait) → destination. */
+/** Every leg's stops as one list: last-seen bus → your stop → change → next bus → destination. */
 export function timelineRows(journey: JourneyView): TimelineRow[] {
   const rows: TimelineRow[] = [];
   const lastLeg = journey.legs.length - 1;
+  let boarded = false;
 
   journey.legs.forEach((leg, li) => {
     const lastStop = leg.stops.length - 1;
@@ -14,10 +15,11 @@ export function timelineRows(journey: JourneyView): TimelineRow[] {
     leg.stops.forEach((s, i) => {
       if (li > 0 && i === 0) return; // the change stop, already shown as the previous leg's end
 
+      const isBoard = li === 0 && s.stopId === leg.boardStopId;
       const kind =
-        li === 0 && i === 0 && s.stopId !== leg.boardStopId
+        li === 0 && i === 0 && !isBoard
           ? "bus"
-          : li === 0 && s.stopId === leg.boardStopId
+          : isBoard
             ? "board"
             : i === lastStop
               ? li === lastLeg
@@ -25,24 +27,29 @@ export function timelineRows(journey: JourneyView): TimelineRow[] {
                 : "change"
               : "stop";
 
+      boarded ||= isBoard;
+
+      const next = kind === "change" ? journey.legs[li + 1]! : undefined;
+
       rows.push({
         kind,
         stopId: s.stopId,
         name: s.name,
         at: kind === "end" ? journey.arriveBy : s.est,
+        routeName: leg.routeName,
+        beforeBoard: !boarded,
+        nextRouteName: next?.routeName,
+        waitMin: next?.waitMinBefore,
       });
 
-      if (kind === "change") {
-        const next = journey.legs[li + 1]!;
-
+      if (next)
         rows.push({
-          kind: "wait",
+          kind: "depart",
           stopId: s.stopId,
-          waitMin: next.waitMinBefore ?? 0,
+          at: next.boardEst,
           routeName: next.routeName,
-          departs: next.boardEst,
+          beforeBoard: false,
         });
-      }
     });
   });
 

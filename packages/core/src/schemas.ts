@@ -3,6 +3,7 @@
 import { z } from "zod";
 import type {
   IngestBody,
+  LineInput,
   PlanInput,
   StopIdsInput,
   StopSearchInput,
@@ -38,3 +39,8 @@ export const StopSearchInputSchema = z.object({
 export const StopIdsInputSchema = z.object({
   ids: z.array(z.string().min(1)).min(1).max(10),
 }) satisfies z.ZodType<StopIdsInput>;
+
+export const LineInputSchema = z.object({
+  routeId: z.string().min(1),
+  journeyId: z.string().min(1).optional(),
+}) satisfies z.ZodType<LineInput>;

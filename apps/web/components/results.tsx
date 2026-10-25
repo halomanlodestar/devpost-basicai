@@ -4,7 +4,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { LaterBuses } from "@/components/later-buses";
-import { OptionCard } from "@/components/option-card";
+import { OptionCard, OptionCompact } from "@/components/option-card";
 import { PlanHeader } from "@/components/plan-header";
 import { PlanFallback } from "@/components/plan-state";
 import { useNow } from "@/hooks/use-now";
@@ -27,16 +27,22 @@ export function Results() {
         reconnecting={query.reconnecting}
       />
       {query.data?.kind === "ok" ? (
-        query.data.options.map((o) => (
-          <div key={o.id} className="flex flex-col gap-7">
-            <OptionCard
-              option={o}
-              href={`/plan/${encodeURIComponent(o.id)}?${qs}`}
-              now={now}
+        <div className="flex flex-col gap-3">
+          {query.data.options.map((o, i) => {
+            const href = `/plan/${encodeURIComponent(o.id)}?${qs}`;
+
+            return i === 0 ? (
+              <OptionCard key={o.id} option={o} href={href} now={now} />
+            ) : (
+              <OptionCompact key={o.id} option={o} href={href} />
+            );
+          })}
+          <div className="mt-4">
+            <LaterBuses
+              journeys={query.data.options[0]!.journeys.slice(1, 4)}
             />
-            <LaterBuses journeys={o.journeys.slice(1, 4)} />
           </div>
-        ))
+        </div>
       ) : (
         <PlanFallback query={query} from={from} to={to} />
       )}

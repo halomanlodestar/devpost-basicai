@@ -77,6 +77,15 @@
   --ring: #ff7a45;
   --route: #ff7a45;
   --route-foreground: #1c0f08;
+  /* one color per bus route; route 1 is the brand coral */
+  --route-1: #ff7a45;
+  --route-1-ink: #1c0f08;
+  --route-2: #0e9488;
+  --route-2-ink: #ffffff;
+  --route-3: #7c4ddb;
+  --route-3-ink: #ffffff;
+  --route-4: #2f6fe4;
+  --route-4-ink: #ffffff;
   --late: #c4183c;
   --early: #1a7f46;
   --chart-1: #ff7a45;
@@ -117,6 +126,14 @@
     --ring: #ff8a5c;
     --route: #ff8a5c;
     --route-foreground: #1c0f08;
+    --route-1: #ff8a5c;
+    --route-1-ink: #1c0f08;
+    --route-2: #2dd4bf;
+    --route-2-ink: #062420;
+    --route-3: #a98bff;
+    --route-3-ink: #150b30;
+    --route-4: #6b9bff;
+    --route-4-ink: #0b1430;
     --late: #ff6b8a;
     --early: #5fd48f;
     --chart-1: #ff8a5c;

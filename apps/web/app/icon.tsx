@@ -1,0 +1,11 @@
+/** @format */
+
+import { ImageResponse } from "next/og";
+import { BrandMark } from "@/lib/brand";
+
+export const size = { width: 32, height: 32 };
+export const contentType = "image/png";
+
+export default function Icon() {
+  return new ImageResponse(<BrandMark px={32} />, size);
+}

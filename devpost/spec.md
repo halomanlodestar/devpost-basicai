@@ -3,7 +3,7 @@ doc: spec
 status: approved
 ---
 
-# [Name TBD]: Technical Spec
+# On the way: Technical Spec
 
 ## How This Works, In Plain Language
 There are two deployables in one Bun workspace.
@@ -297,6 +297,7 @@ Implements `prd.md > Accounts` and the Sign in screen.
 | `stops.byIds({ids})` | query | public | stop names for ids already in the URL |
 | `plan.search({from,to})` | query | public | first paint and fallback |
 | `plan.watch({from,to})` | subscription (SSE) | public | Results and Journeys live |
+| `line.watch({routeId, journeyId?})` | subscription (SSE) | public | Line view live |
 | `alerts.create` / `alerts.cancel` / `alerts.mine` | mutation / mutation / query | user | Notify me |
 | `commutes.save` / `commutes.remove` / `commutes.list` | mutation / mutation / query | user | Saved commutes, My commutes |
 | `push.register` / `push.unregister` | mutation | user | Web Push |
@@ -312,6 +313,7 @@ Implements `prd.md > Screens and Layout`. Pages are client components (`"use cli
 | `/plan?from=&to=` | Results | Subscribes to `plan.watch`. Rows show total min, "home by", routes, "1 change at M". Empty states as in the PRD. |
 | `/plan/[optionId]?from=&to=` | Journeys | Same subscription. Journey rows show be-at-stop-by, late badge, arrive-by, last seen / not started, transfer legs with the wait, and Notify me (ghost) plus Save. |
 | `/sign-in` | Sign in | Email and password, sign up / sign in toggle, handles `next` and the pending action. |
+| `/line/[routeId]?journey=&board=&alight=` | Line view | One bus line end to end (`line.watch`, SSE): every stop, live buses on it with lateness, the rider's bus's time at each stop, their ride drawn bold and the rest faded. Reached from the route chips on Journeys. |
 | `/commutes` | My commutes | List with name, route, departure, and remove. |
 
 PWA: `app/manifest.ts`, icons, `public/sw.js` (push + notificationclick → open `/plan?...`).
@@ -485,5 +487,5 @@ To be checked during build with `packages/core` tests that replay a 15-min-wrong
 Bun compatibility: Prisma client and adapter, `web-push`, BullMQ; the tRPC SSE subscription under `Bun.serve`; whether the Redis provider allows `noeviction`; packaging `apps/api` as a prebuilt artifact (`bun build` bundle vs `--compile` with Prisma).
 
 ### Carried over
-- **Product name** (`prd.md > Open Questions`), decided in `6-ship`.
+- ~~Product name~~ → **On the way** (decided in `5-build`).
 - **Seed network:** a realistic small network (3–4 routes per direction, ~25 stops, one shared transfer stop). If you want, give the real stop names of your old commute and the demo uses them; otherwise placeholders.

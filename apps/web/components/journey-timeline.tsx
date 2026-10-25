@@ -4,6 +4,7 @@ import type { JourneyView } from "@app/core/types";
 import { Bus } from "lucide-react";
 import { Clock } from "@/components/clock";
 import { RouteChip } from "@/components/route-chip";
+import { interchange, routeColor } from "@/lib/route-color";
 import { fmtAgo, fmtDuration } from "@/lib/time";
 import { timelineRows } from "@/lib/timeline";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,10 @@ interface JourneyTimelineProps {
   now: number;
 }
 
-/** The bus's way to you and on to your destination, across every change: a time at every stop. */
+/**
+ * The whole trip in each route's color: the bus's way to you (faded), your stop,
+ * stops you pass through (lighter), the change and the next bus, your destination.
+ */
 export function JourneyTimeline({ journey, now }: JourneyTimelineProps) {
   const rows = timelineRows(journey);
 
@@ -21,23 +25,33 @@ export function JourneyTimeline({ journey, now }: JourneyTimelineProps) {
     <ol className="grid grid-cols-[54px_36px_minmax(0,1fr)]">
       {rows.map((r, i) => {
         const isLast = i === rows.length - 1;
+        const color = routeColor(r.routeName).bg;
+        // the line below this row belongs to whatever is ridden next
+        const below =
+          r.kind === "change" ? routeColor(r.nextRouteName!).bg : color;
+        const fadedBelow = rows[i + 1]?.beforeBoard ?? false;
 
-        if (r.kind === "wait")
+        if (r.kind === "depart")
           return (
-            <li key={`wait-${r.stopId}`} className="contents">
+            <li key={`depart-${r.stopId}`} className="contents">
               <Clock
-                ms={r.departs}
+                ms={r.at}
                 bare
-                className="pt-2.5 text-[15px] font-bold"
+                className="pt-1 text-[19px] font-extrabold"
               />
               <div aria-hidden className="flex flex-col items-center">
-                <span className="w-1 flex-1 border-l-4 border-dotted border-route" />
+                <RouteChip
+                  name={r.routeName}
+                  compact
+                  className="h-[26px] text-[13px]"
+                />
+                <span
+                  className="min-h-[26px] w-1 flex-1"
+                  style={{ background: color }}
+                />
               </div>
-              <div className="flex flex-wrap items-center gap-2 py-2 pb-[22px] pl-1 text-[15px] font-semibold">
-                <span className="text-muted-foreground">
-                  Wait {fmtDuration(r.waitMin * 60_000)}, then
-                </span>
-                <RouteChip name={r.routeName} className="h-7 text-sm" />
+              <div className="pt-1 pb-[18px] pl-1 text-sm font-semibold text-muted-foreground">
+                Bus {r.routeName.split(" · ")[0]} leaves
               </div>
             </li>
           );
@@ -61,14 +75,49 @@ export function JourneyTimeline({ journey, now }: JourneyTimelineProps) {
                 <span className="flex size-8 items-center justify-center rounded-full bg-foreground">
                   <Bus className="size-4 text-background" strokeWidth={2.2} />
                 </span>
-              ) : r.kind === "board" || r.kind === "change" ? (
-                <span className="size-[26px] rounded-full border-[6px] border-route bg-background" />
+              ) : r.kind === "change" ? (
+                <span
+                  className="flex size-[26px] items-center justify-center rounded-full"
+                  style={{
+                    background: interchange(r.routeName, r.nextRouteName!),
+                  }}
+                >
+                  <span className="size-3 rounded-full bg-background" />
+                </span>
+              ) : r.kind === "board" ? (
+                <span
+                  className="size-[26px] rounded-full border-[6px] bg-background"
+                  style={{ borderColor: color }}
+                />
               ) : r.kind === "end" ? (
-                <span className="size-[26px] rounded-full bg-route" />
+                <span
+                  className="size-[26px] rounded-full"
+                  style={{ background: color }}
+                />
               ) : (
-                <span className="mt-1.5 size-3 rounded-full bg-route" />
+                <span
+                  className={cn(
+                    "mt-1.5 size-3 rounded-full",
+                    r.beforeBoard ? "opacity-30" : "opacity-45",
+                  )}
+                  style={{ background: color }}
+                />
               )}
-              {!isLast && <span className="min-h-[34px] w-1 flex-1 bg-route" />}
+              {!isLast &&
+                (r.kind === "change" ? (
+                  <span
+                    className="min-h-[34px] w-0 flex-1 border-l-4 border-dotted"
+                    style={{ borderColor: below }}
+                  />
+                ) : (
+                  <span
+                    className={cn(
+                      "min-h-[34px] w-1 flex-1",
+                      fadedBelow && "opacity-30",
+                    )}
+                    style={{ background: below }}
+                  />
+                ))}
             </div>
             <div
               className={cn(
@@ -83,7 +132,10 @@ export function JourneyTimeline({ journey, now }: JourneyTimelineProps) {
                     ? "text-lg font-extrabold"
                     : r.kind === "bus"
                       ? "text-base font-semibold"
-                      : "pt-1 text-base text-muted-foreground",
+                      : cn(
+                          "pt-1 text-base text-muted-foreground",
+                          r.beforeBoard && "opacity-70",
+                        ),
                 )}
               >
                 {r.name}
@@ -94,13 +146,13 @@ export function JourneyTimeline({ journey, now }: JourneyTimelineProps) {
                 </span>
               )}
               {r.kind === "board" && (
-                <span className="text-[13px] font-bold text-route">
+                <span className="text-[13px] font-bold" style={{ color }}>
                   Your stop
                 </span>
               )}
               {r.kind === "change" && (
-                <span className="text-[13px] font-bold text-route">
-                  Change here
+                <span className="text-[13px] font-bold text-muted-foreground">
+                  Change here · wait {fmtDuration((r.waitMin ?? 0) * 60_000)}
                 </span>
               )}
             </div>

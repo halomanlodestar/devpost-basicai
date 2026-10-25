@@ -1,19 +1,19 @@
-/** @format */
+/**
+ * One open subscription stream.
+ *
+ * @format
+ */
 
-import type { PlanResult } from "@app/core/types";
-
-/** One open `plan.watch` stream. */
 export interface Subscriber {
   /** a newer result is waiting to be sent */
   dirty: boolean;
   wake: (() => void) | null;
 }
 
-/** All streams watching one (from, to) pair, sharing one computed result. */
-export interface WatchedPair {
-  from: string;
-  to: string;
+/** All streams watching one thing (a From → To plan, a line), sharing one computed result. */
+export interface Watched {
   routeIds: Set<string>;
+  compute: () => unknown;
   subs: Set<Subscriber>;
-  latest: PlanResult | null;
+  latest: unknown;
 }

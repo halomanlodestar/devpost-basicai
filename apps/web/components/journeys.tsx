@@ -2,7 +2,9 @@
 
 "use client";
 
+import { ChevronRight } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
+import { Fragment } from "react";
 import { Clock } from "@/components/clock";
 import { JourneyTimeline } from "@/components/journey-timeline";
 import { LateLabel } from "@/components/late-label";
@@ -12,6 +14,7 @@ import { PlanFallback } from "@/components/plan-state";
 import { RouteChip } from "@/components/route-chip";
 import { useNow } from "@/hooks/use-now";
 import { usePlan } from "@/hooks/use-plan";
+import { lineHref } from "@/lib/route-color";
 
 export function Journeys() {
   const params = useSearchParams();
@@ -35,8 +38,23 @@ export function Journeys() {
         to={to}
         reconnecting={query.reconnecting}
       >
-        {option?.routes.map((r) => (
-          <RouteChip key={r} name={r} />
+        {j?.legs.map((l, i) => (
+          <Fragment key={l.journeyId}>
+            {i > 0 && (
+              <ChevronRight
+                aria-hidden
+                className="size-4 shrink-0 text-muted-foreground"
+              />
+            )}
+            <RouteChip
+              name={l.routeName}
+              href={lineHref(l.routeId, {
+                journeyId: l.journeyId,
+                board: l.boardStopId,
+                alight: l.alightStopId,
+              })}
+            />
+          </Fragment>
         ))}
       </PlanHeader>
       {option && j ? (
