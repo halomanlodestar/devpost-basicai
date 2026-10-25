@@ -1,8 +1,9 @@
 /** @format */
 
 import type { Option } from "@app/core/types";
-import { Bus } from "lucide-react";
+import { Bus, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { Fragment } from "react";
 import { Clock } from "@/components/clock";
 import { LateLabel } from "@/components/late-label";
 import { RouteChip } from "@/components/route-chip";
@@ -14,27 +15,30 @@ interface OptionCardProps {
   now: number;
 }
 
-/** One way to get from X to Y, as a small vertical route: your stop, the ride, your destination. */
+/** One way to get from X to Y as a small vertical route: your stop, each ride (and change), your destination. */
 export function OptionCard({ option, href, now }: OptionCardProps) {
   const j = option.next;
   const first = j.legs[0]!;
   const last = j.legs[j.legs.length - 1]!;
+  const multi = j.legs.length > 1;
 
   return (
     <Link
       href={href}
       className="flex flex-col gap-[18px] rounded-xl bg-card p-5 transition-colors hover:bg-accent"
     >
-      <div className="flex items-center gap-2">
-        {option.routes.map((r) => (
-          <RouteChip key={r} name={r} />
+      <div className="flex items-center gap-1.5">
+        {option.routes.map((r, i) => (
+          <Fragment key={r}>
+            {i > 0 && (
+              <ChevronRight
+                aria-hidden
+                className="size-4 text-muted-foreground"
+              />
+            )}
+            <RouteChip name={r} />
+          </Fragment>
         ))}
-        {option.changes > 0 && (
-          <span className="text-sm text-muted-foreground">
-            {option.changes} change{option.changes > 1 ? "s" : ""} at{" "}
-            {option.changeStops.join(", ")}
-          </span>
-        )}
         <span className="flex-1" />
         {j.status === "active" && (
           <LateLabel lateMin={j.lateMin} className="text-[15px]" />
@@ -52,14 +56,34 @@ export function OptionCard({ option, href, now }: OptionCardProps) {
           className="text-[36px] leading-none font-extrabold"
         />
 
-        <span
-          aria-hidden
-          className="h-11 w-1 justify-self-center rounded-full bg-route"
-        />
-        <span className="text-[13px] font-semibold text-muted-foreground">
-          {fmtDuration(last.alightEst - first.boardEst)} ride
-        </span>
-        <span />
+        {j.legs.map((leg, i) => (
+          <Fragment key={leg.journeyId}>
+            {i > 0 && (
+              <>
+                <span
+                  aria-hidden
+                  className="size-3 justify-self-center rounded-full border-[3px] border-route bg-card"
+                />
+                <span className="text-[15px] font-bold">
+                  {leg.boardStopName}
+                  <span className="ml-2 text-[13px] font-semibold text-muted-foreground">
+                    wait {fmtDuration((leg.waitMinBefore ?? 0) * 60_000)}
+                  </span>
+                </span>
+                <Clock ms={leg.boardEst} className="text-lg font-bold" />
+              </>
+            )}
+            <span
+              aria-hidden
+              className="h-11 w-1 justify-self-center rounded-full bg-route"
+            />
+            <span className="text-[13px] font-semibold text-muted-foreground">
+              {fmtDuration(leg.alightEst - leg.boardEst)}{" "}
+              {multi ? `on bus ${leg.routeName.split(" · ")[0]}` : "ride"}
+            </span>
+            <span />
+          </Fragment>
+        ))}
 
         <span
           aria-hidden

@@ -1,5 +1,6 @@
 /** @format */
 
+import type { Journey } from "./network";
 import type { TripState } from "./predict";
 
 export interface PatternLeg {
@@ -93,3 +94,12 @@ export interface PlanNoMoreToday {
 }
 
 export type PlanResult = PlanOk | PlanNoRoute | PlanNoMoreToday;
+
+/** One leg of a journey, worked out: which bus, and its expected and live times per stop seq. */
+export interface LegCalc {
+  leg: PatternLeg;
+  journey: Journey;
+  trip?: TripState;
+  expected: number[];
+  estimated: number[];
+}
