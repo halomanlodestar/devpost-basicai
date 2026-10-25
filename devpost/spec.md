@@ -261,6 +261,8 @@ Implements `prd.md > Route Options (Results)` (live criterion) and the Core Jour
 - The SSE ping runs every 15s and the server `idleTimeout` is 0.
 
 ### Alerts and Notifications
+**As built (revised in `5-build`):** no accounts and no BullMQ. A **device** is a browser's push subscription (`device`: endpoint, keys, sha256 of a secret the browser keeps in localStorage; `alerts.register` returns `{deviceId, secret}`). `alerts.create/cancel/mine` take those credentials. Open `alert` rows are held in memory by `AlertScheduler` with one timer per countdown mark still ahead (45/30/15 min before "be there by", `core/alerts.ts`); each ingest batch re-arms alerts on the changed routes, a 60 s pass catches silent-bus drift, and boot re-arms everything from Postgres. Delay pushes fire when lateness crosses a new 10-min step. A 404/410 from the push service deletes the device. An alert closes when its bus passes the rider's stop. The notes below are the original BullMQ/sign-in design.
+
 Implements `prd.md > Notifications` and `prd.md > Accounts`.
 - **Push registration:**
   - The web app registers `public/sw.js`.

@@ -168,3 +168,40 @@ model TicketEvent {
   @@index([tripId, occurredAt])
   @@map("ticket_event")
 }
+
+// ── Alerts (no accounts: a device is a browser's push subscription) ──
+
+model Device {
+  id         String   @id @default(cuid())
+  /// the push service URL for this browser; unique per subscription
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  /// sha256 of the secret the browser keeps; proves "these alerts are mine"
+  secretHash String   @map("secret_hash")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  alerts     Alert[]
+
+  @@map("device")
+}
+
+/// Notify me for one journey on one day, at the rider's stop. Timers are re-armed from these on boot.
+model Alert {
+  id             String    @id @default(cuid())
+  deviceId       String    @map("device_id")
+  journeyId      String    @map("journey_id")
+  serviceDate    String    @map("service_date")
+  fromStopId     String    @map("from_stop_id")
+  toStopId       String    @map("to_stop_id")
+  /// link back to the journey screen the rider set it from
+  url            String
+  sentThresholds Int[]     @default([]) @map("sent_thresholds")
+  lastLateBucket Int       @default(0) @map("last_late_bucket")
+  closedAt       DateTime? @map("closed_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  device         Device    @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, journeyId, serviceDate])
+  @@index([journeyId, serviceDate])
+  @@map("alert")
+}

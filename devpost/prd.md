@@ -89,7 +89,7 @@ Source: `scope.md > The Unique Kernel`.
 - Subscribing when the bus is already closer than a threshold sends only the alerts still ahead.
 - **Saved commutes (recurring alerts):** a signed-in rider can save a journey under a name (e.g. "College → Home"). It repeats the same alerts **every day for the journey at that same timetabled departure** ("same time tomorrow"), until removed. It recurs daily with no weekday filter, and saving happens from the journey row next to Notify me.
 - **My commutes:** a simple list of saved commutes (name, route, departure time) where each one can be removed (minimal, reached from Search).
-- [ ] Signed out → Notify me shows the sign-in prompt, and after sign-in the alert is active.
+- [ ] First Notify me asks for notification permission; once granted, the alert is active on that device. Denied → "Notifications are blocked on this device".
 - [ ] A saved commute sends alerts for tomorrow's journey at the same departure time without the rider doing anything.
 - [ ] Removing a saved commute stops its future alerts.
 - [ ] With the bus replayed toward the stop, alerts arrive at 45/30/15 min.
@@ -97,8 +97,8 @@ Source: `scope.md > The Unique Kernel`.
 
 ### Accounts
 Source: `scope.md > The POC Boundary` (Accounts).
-- Signing in is **optional**. Everything except notifications works signed out.
-- Signing in enables **one-time alerts** (Notify me) and **saved commutes**: named, recurring alerts such as "College → Home" (recurrence rule in **Open Questions**).
+- **No accounts** (revised in `5-build`, learner's call: "the path of least resistance"). Alerts belong to the **device**: the first Notify me asks for notification permission, and that browser's push subscription is what the alerts are tied to. No sign-in screen.
+- Trade-off accepted: alerts don't follow the rider to another device, and clearing site data loses the ability to cancel them from the app. Sign-in can be added later and adopt a device's alerts.
 
 ### Ticket Events (background, no UI)
 Source: `scope.md > The POC Boundary` (Emitters, Dead-zone handling, Ingestion).

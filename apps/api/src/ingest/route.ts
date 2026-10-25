@@ -5,6 +5,7 @@
 
 import { IngestBodySchema } from "@app/core";
 import type { Db } from "@app/db";
+import type { AlertScheduler } from "../alerts/scheduler";
 import type { Hub } from "../hub";
 import type { State } from "../types";
 import { applyBatch } from "./apply";
@@ -14,6 +15,7 @@ export function ingestHandler(
   db: Db,
   state: State,
   hub: Hub,
+  alerts: AlertScheduler,
   tz: string,
   encKey: string,
 ) {
@@ -46,6 +48,7 @@ export function ingestHandler(
     );
 
     hub.routesChanged(routeIds);
+    void alerts.routesChanged(routeIds);
 
     return Response.json(response);
   };

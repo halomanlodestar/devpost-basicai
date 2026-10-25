@@ -9,6 +9,7 @@ import { Clock } from "@/components/clock";
 import { JourneyTimeline } from "@/components/journey-timeline";
 import { LateLabel } from "@/components/late-label";
 import { LaterBuses } from "@/components/later-buses";
+import { NotifyButton } from "@/components/notify-button";
 import { PlanHeader } from "@/components/plan-header";
 import { PlanFallback } from "@/components/plan-state";
 import { RouteChip } from "@/components/route-chip";
@@ -82,6 +83,16 @@ export function Journeys() {
             journeys={option.journeys.slice(1, 2)}
             now={now}
             title="Next bus"
+          />
+          <NotifyButton
+            key={j.id}
+            target={{
+              journeyId: j.legs[0]!.journeyId,
+              serviceDate: j.serviceDate,
+              fromStopId: j.legs[0]!.boardStopId,
+              toStopId: j.legs.at(-1)!.alightStopId,
+              url: `/plan/${optionId}?${new URLSearchParams({ from, to })}`,
+            }}
           />
         </>
       ) : query.data?.kind === "ok" ? (

@@ -1,5 +1,6 @@
 /** @format */
 
+export type * from "./alerts";
 export type * from "./hub";
 export type * from "./ingest";
 /** @format */

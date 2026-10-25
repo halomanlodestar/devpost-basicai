@@ -1,6 +1,7 @@
 /** @format */
 
 import { createDb } from "@app/db";
+import { AlertScheduler } from "./alerts/scheduler";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { withCors } from "./cors";
 import { env } from "./env";
@@ -14,7 +15,15 @@ const db = createDb(env.DATABASE_URL);
 const state = await loadState(db, env.TZ_SERVICE);
 const hub = new Hub(state, env.TZ_SERVICE);
 hub.start();
-const createContext = makeCreateContext({ state, hub, tz: env.TZ_SERVICE });
+const alerts = new AlertScheduler(db, state, env.TZ_SERVICE);
+const openAlerts = await alerts.boot();
+const createContext = makeCreateContext({
+  state,
+  hub,
+  db,
+  alerts,
+  tz: env.TZ_SERVICE,
+});
 
 const trpc = withCors((req) =>
   fetchRequestHandler({
@@ -36,6 +45,7 @@ const server = Bun.serve({
         db,
         state,
         hub,
+        alerts,
         env.TZ_SERVICE,
         env.EMITTER_KEY_ENC_KEY,
       ),
@@ -46,5 +56,5 @@ const server = Bun.serve({
 
 console.log(
   `api listening on ${server.url} · ${state.net.stops.size} stops, ${state.net.routes.size} routes, ` +
-    `${state.net.journeys.size} journeys, ${state.trips.size} trips in memory`,
+    `${state.net.journeys.size} journeys, ${state.trips.size} trips in memory, ${openAlerts} alerts armed`,
 );
