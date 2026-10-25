@@ -13,10 +13,17 @@ export function pushSupport(): PushSupport {
     typeof window === "undefined" ||
     !("serviceWorker" in navigator) ||
     !("PushManager" in window) ||
-    !("Notification" in window) ||
-    !VAPID
+    !("Notification" in window)
   )
     return "unsupported";
+
+  if (!VAPID) {
+    console.error(
+      "Notify me is off: NEXT_PUBLIC_VAPID_PUBLIC_KEY was not set when the site was built.",
+    );
+
+    return "unconfigured";
+  }
 
   return Notification.permission;
 }
@@ -48,7 +55,9 @@ function vapidKey(base64url: string) {
 
 /** Asks for permission if needed and returns this browser's push subscription, or null if refused. */
 export async function subscribe(): Promise<PushSubscriptionJSON | null> {
-  if (pushSupport() === "unsupported") return null;
+  const support = pushSupport();
+
+  if (support === "unsupported" || support === "unconfigured") return null;
   if ((await Notification.requestPermission()) !== "granted") return null;
 
   const reg = await navigator.serviceWorker.ready;

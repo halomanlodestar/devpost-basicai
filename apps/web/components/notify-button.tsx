@@ -14,6 +14,14 @@ interface NotifyButtonProps {
 export function NotifyButton({ target }: NotifyButtonProps) {
   const n = useNotify(target);
 
+  if (n.support === "unconfigured")
+    return (
+      <p className="flex items-center gap-2.5 rounded-lg border-[1.5px] border-border px-4 py-3.5 text-sm text-muted-foreground">
+        <BellOff aria-hidden className="size-4 shrink-0" />
+        Alerts aren&apos;t available right now
+      </p>
+    );
+
   if (n.support === "unsupported")
     return (
       <p className="flex items-center gap-2.5 rounded-lg border-[1.5px] border-border px-4 py-3.5 text-sm text-muted-foreground">

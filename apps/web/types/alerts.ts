@@ -12,7 +12,9 @@ export interface StoredDevice {
 }
 
 /** Whether this browser can get alerts at all, and whether the rider allowed them. */
-export type PushSupport = "unsupported" | "default" | "granted" | "denied";
+/** "unconfigured": the site was built without its VAPID public key (a deploy problem, not the phone). */
+export type PushSupport =
+  "unconfigured" | "unsupported" | "default" | "granted" | "denied";
 
 /** The journey a Notify me is for. */
 export interface NotifyTarget {
