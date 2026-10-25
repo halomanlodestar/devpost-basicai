@@ -8,7 +8,7 @@ import { Clock } from "@/components/clock";
 import { LateLabel } from "@/components/late-label";
 import { RouteChip } from "@/components/route-chip";
 import { interchange, routeColor, routeNumber } from "@/lib/route-color";
-import { fmtAgo, fmtDuration } from "@/lib/time";
+import { fmtAgo, fmtDuration, isTomorrow } from "@/lib/time";
 
 interface OptionCardProps {
   option: Option;
@@ -46,6 +46,11 @@ export function OptionCard({ option, href, now }: OptionCardProps) {
       <div className="flex items-center gap-1.5">
         <Chips routes={option.routes} />
         <span className="flex-1" />
+        {isTomorrow(j.serviceDate, now) && (
+          <span className="text-[15px] font-bold text-muted-foreground">
+            Tomorrow
+          </span>
+        )}
         {j.status === "active" && (
           <LateLabel lateMin={j.lateMin} className="text-[15px]" />
         )}
@@ -121,7 +126,7 @@ export function OptionCard({ option, href, now }: OptionCardProps) {
 }
 
 /** A slower alternative, kept small: its buses, a bar split by ride time, be-there and arrival. */
-export function OptionCompact({ option, href }: Omit<OptionCardProps, "now">) {
+export function OptionCompact({ option, href, now }: OptionCardProps) {
   const j = option.next;
   const total = j.legs.reduce((s, l) => s + (l.alightEst - l.boardEst), 0) || 1;
 
@@ -133,6 +138,11 @@ export function OptionCompact({ option, href }: Omit<OptionCardProps, "now">) {
       <div className="flex items-center gap-1.5">
         <Chips routes={option.routes} />
         <span className="flex-1" />
+        {isTomorrow(j.serviceDate, now) && (
+          <span className="text-[13px] font-bold text-muted-foreground">
+            Tomorrow
+          </span>
+        )}
         {option.changeStops.length > 0 && (
           <span className="truncate text-[13px] text-muted-foreground">
             via {option.changeStops.join(", ")}

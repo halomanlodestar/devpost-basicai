@@ -2,14 +2,17 @@
 
 import type { JourneyView } from "@app/core/types";
 import { Clock } from "@/components/clock";
+import { isTomorrow } from "@/lib/time";
 
 interface LaterBusesProps {
   journeys: JourneyView[];
+  now: number;
   title?: string;
 }
 
 export function LaterBuses({
   journeys,
+  now,
   title = "Later buses",
 }: LaterBusesProps) {
   if (journeys.length === 0) return null;
@@ -27,6 +30,7 @@ export function LaterBuses({
           <div className="flex flex-col">
             <span className="text-xs font-semibold text-muted-foreground">
               Be there by
+              {isTomorrow(j.serviceDate, now) && " · tomorrow"}
             </span>
             <Clock ms={j.beAtStopBy} className="text-[22px] font-extrabold" />
           </div>

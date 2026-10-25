@@ -3,9 +3,9 @@
 import { describe, expect, test } from "bun:test";
 import { CONNECTION_BUFFER_MS, findPatterns, plan } from "../src/plan";
 import { BUFFER_MS, timetableOnly } from "../src/predict";
-import { SERVICE_TZ } from "../src/time";
+import { addDays, SERVICE_TZ } from "../src/time";
 import type { PredictCtx, TripState } from "../src/types";
-import { at, net } from "./fixture";
+import { at, DATE, net } from "./fixture";
 
 const ctx = (now: string): PredictCtx => ({
   net,
@@ -69,9 +69,9 @@ describe("transfer journeys", () => {
       id === "R-UP-0800" ? late : undefined,
     );
     if (r.kind !== "ok") throw new Error(r.kind);
-    const rows = r.options[0]!.journeys.map((x) =>
-      x.legs.map((l) => l.journeyId).join("+"),
-    );
+    const rows = r.options[0]!.journeys.filter(
+      (x) => x.serviceDate === DATE,
+    ).map((x) => x.legs.map((l) => l.journeyId).join("+"));
     // the late 08:00 bus now only makes the 09:40 connection; so does the 09:00 bus,
     // with 40 min less waiting at C, so the pointless 08:00 row is dropped
     expect(rows).toEqual(["R-UP-0900+S-UP-0940"]);
@@ -98,8 +98,34 @@ describe("transfer journeys", () => {
     expect(j.legs[1]!.waitMinBefore).toBe(5);
   });
 
-  test("no catchable connection left today: no_more_today", () => {
+  test("no connection left today: tomorrow's first transfer follows on", () => {
     const r = plan(ctx("09:45"), "A", "F", noTrips);
-    expect(r.kind).toBe("no_more_today");
+    if (r.kind !== "ok") throw new Error(r.kind);
+    const j = r.options[0]!.next;
+    expect(j.serviceDate).toBe(addDays(DATE, 1));
+    expect(j.legs.map((l) => l.journeyId)).toEqual(["R-UP-0800", "S-UP-0840"]);
+  });
+
+  test("a late bus that only connects tomorrow isn't offered as an overnight wait", () => {
+    // the 09:00 R bus runs so late it reaches C after the day's last S bus (09:40);
+    // its only connection is tomorrow's 08:40, which tomorrow's 08:00 R bus also makes
+    const veryLate: TripState = {
+      status: "active",
+      lastSeq: 0,
+      lastStopId: "A",
+      anchorAt: at("09:30"),
+      lastSeenAt: at("09:30"),
+    };
+    const r = plan(ctx("09:31"), "B", "F", (id, d) =>
+      id === "R-UP-0900" && d === DATE ? veryLate : undefined,
+    );
+    if (r.kind !== "ok") throw new Error(r.kind);
+    const js = r.options[0]!.journeys;
+    expect(js.some((x) => x.serviceDate === DATE)).toBe(false);
+    expect(js[0]!.legs.map((l) => l.journeyId)).toEqual([
+      "R-UP-0800",
+      "S-UP-0840",
+    ]);
+    expect(js[0]!.serviceDate).toBe(addDays(DATE, 1));
   });
 });

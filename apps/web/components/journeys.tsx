@@ -15,6 +15,7 @@ import { RouteChip } from "@/components/route-chip";
 import { useNow } from "@/hooks/use-now";
 import { usePlan } from "@/hooks/use-plan";
 import { lineHref } from "@/lib/route-color";
+import { isTomorrow } from "@/lib/time";
 
 export function Journeys() {
   const params = useSearchParams();
@@ -62,6 +63,7 @@ export function Journeys() {
           <section className="flex flex-col gap-1.5">
             <span className="text-[15px] font-semibold text-muted-foreground">
               Be there by
+              {isTomorrow(j.serviceDate, now) && " · tomorrow"}
             </span>
             <Clock
               ms={j.beAtStopBy}
@@ -76,7 +78,11 @@ export function Journeys() {
             )}
           </section>
           <JourneyTimeline journey={j} now={now} />
-          <LaterBuses journeys={option.journeys.slice(1, 2)} title="Next bus" />
+          <LaterBuses
+            journeys={option.journeys.slice(1, 2)}
+            now={now}
+            title="Next bus"
+          />
         </>
       ) : query.data?.kind === "ok" ? (
         <p className="py-10 text-center text-muted-foreground">

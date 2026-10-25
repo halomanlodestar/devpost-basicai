@@ -1,6 +1,6 @@
 /** @format */
 
-import { SERVICE_TZ } from "@app/core/time";
+import { SERVICE_TZ, serviceDate } from "@app/core/time";
 
 const clock = new Intl.DateTimeFormat("en-IN", {
   timeZone: SERVICE_TZ,
@@ -34,3 +34,7 @@ export function fmtAgo(ms: number, now: number) {
 
   return m < 1 ? "just now" : `${fmtDuration(m * 60_000)} ago`;
 }
+
+/** A journey on a later service day than today's: label it, or "6:03 am" at night reads as a mistake. */
+export const isTomorrow = (journeyServiceDate: string, now: number) =>
+  journeyServiceDate > serviceDate(now);

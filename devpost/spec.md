@@ -241,7 +241,7 @@ Implements `prd.md > Route Options (Results)` and the transfer parts of `prd.md 
    Options are sorted by `arriveBy`.
 4. **Empty cases** (`prd.md > States and Boundaries`):
    - No pattern: `{ kind: "no_route", reverseServed: boolean }`.
-   - Patterns exist but no catchable trip today: `"no_more_today"` with tomorrow's first departure from the journey templates.
+   - Journeys cover a rolling **24 hours** (today's and tomorrow's service days), so late at night tomorrow's buses follow on, labelled "Tomorrow". `"no_more_today"` remains only for a route with nothing in the next 24 hours. Connections may come from the next service day.
 
 Output shape (Zod schema in `packages/core/schemas.ts`, shared by API and web):
 ```ts

@@ -3,6 +3,7 @@
 // From X to Y: route patterns, today's catchable journeys, options (spec > Planner).
 // RAPTOR-style rounds: round k = k changes (max 2). A higher round is only
 // explored when the lower one found nothing; the 3 fastest options are kept.
+// Journeys cover the next 24 hours, so late at night tomorrow's buses follow on.
 
 import {
   BUFFER_MS,
@@ -28,6 +29,8 @@ import type {
 /** A transfer is catchable if the next bus reaches the change stop this long after the first one. */
 export const CONNECTION_BUFFER_MS = 5 * MIN;
 export const MAX_CHANGES = 2;
+/** The journeys shown run from now to this far ahead, so late at night tomorrow's buses follow on. */
+export const HORIZON_MS = 24 * 60 * MIN;
 /** Results show at most this many ways to go, fastest first. */
 export const MAX_OPTIONS = 3;
 
@@ -160,7 +163,10 @@ function legCalc(
   return { leg, journey, trip: active ? trip : undefined, expected, estimated };
 }
 
-/** The earliest journey on this leg whose bus reaches the change stop after `readyAt`. */
+/**
+ * The earliest journey on this leg whose bus reaches the change stop after `readyAt`,
+ * from the same service day or the next one (a late first bus can connect past midnight).
+ */
 function connection(
   ctx: PredictCtx,
   trips: TripLookup,
@@ -170,13 +176,14 @@ function connection(
 ): LegCalc | null {
   let best: LegCalc | null = null;
 
-  for (const j of ctx.net.journeysByRoute.get(leg.routeId) ?? []) {
-    const c = legCalc(ctx, trips, j, date, leg);
+  for (const d of [date, addDays(date, 1)])
+    for (const j of ctx.net.journeysByRoute.get(leg.routeId) ?? []) {
+      const c = legCalc(ctx, trips, j, d, leg);
 
-    if (!c || c.estimated[leg.boardSeq]! < readyAt) continue;
-    if (!best || c.estimated[leg.boardSeq]! < best.estimated[leg.boardSeq]!)
-      best = c;
-  }
+      if (!c || c.estimated[leg.boardSeq]! < readyAt) continue;
+      if (!best || c.estimated[leg.boardSeq]! < best.estimated[leg.boardSeq]!)
+        best = c;
+    }
 
   return best;
 }
@@ -244,7 +251,7 @@ function journeyView(
       arrived + CONNECTION_BUFFER_MS,
     );
 
-    if (!next) return null; // no connection left today
+    if (!next) return null; // no connection within reach
 
     legs.push(
       legOut(
@@ -294,22 +301,25 @@ export function plan(
     };
 
   const today = serviceDate(ctx.now, ctx.tz);
+  const dates = [today, addDays(today, 1)];
   const options: Option[] = [];
 
   for (const pattern of patterns) {
     const seen = new Set<string>();
-    const journeys = (
-      ctx.net.journeysByRoute.get(pattern.legs[0]!.routeId) ?? []
-    )
-      .map((j) => journeyView(ctx, trips, pattern, j, today))
-      .filter((v): v is JourneyView => v !== null)
+    const firsts = ctx.net.journeysByRoute.get(pattern.legs[0]!.routeId) ?? [];
+    const journeys = dates
+      .flatMap((d) => firsts.map((j) => journeyView(ctx, trips, pattern, j, d)))
+      .filter(
+        (v): v is JourneyView =>
+          v !== null && v.beAtStopBy < ctx.now + HORIZON_MS,
+      )
       .sort((a, b) => a.beAtStopBy - b.beAtStopBy)
       // two first buses that make the same connection: keep the later one (less waiting)
       .reverse()
       .filter((v) => {
         const tail = v.legs
           .slice(1)
-          .map((l) => l.journeyId)
+          .map((l) => `${l.journeyId}@${l.boardEst}`)
           .join("+");
 
         if (!tail) return true;

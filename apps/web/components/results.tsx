@@ -34,12 +34,13 @@ export function Results() {
             return i === 0 ? (
               <OptionCard key={o.id} option={o} href={href} now={now} />
             ) : (
-              <OptionCompact key={o.id} option={o} href={href} />
+              <OptionCompact key={o.id} option={o} href={href} now={now} />
             );
           })}
           <div className="mt-4">
             <LaterBuses
               journeys={query.data.options[0]!.journeys.slice(1, 4)}
+              now={now}
             />
           </div>
         </div>

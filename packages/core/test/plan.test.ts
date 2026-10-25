@@ -3,9 +3,9 @@
 import { describe, expect, test } from "bun:test";
 import { plan } from "../src/plan";
 import { BUFFER_MS, timetableOnly } from "../src/predict";
-import { SERVICE_TZ } from "../src/time";
+import { addDays, SERVICE_TZ } from "../src/time";
 import type { PredictCtx } from "../src/types";
-import { at, net } from "./fixture";
+import { at, DATE, net } from "./fixture";
 
 const ctx = (now: string): PredictCtx => ({
   net,
@@ -53,9 +53,10 @@ describe("direct planning (round 0)", () => {
     // 08:40: past due at B with no report → gone; the 09:00 bus is next
     const late = plan(ctx("08:40"), "B", "D", noTrips);
     if (late.kind !== "ok") throw new Error(late.kind);
-    expect(late.options[0]!.journeys.map((x) => x.legs[0]!.journeyId)).toEqual([
-      "R-UP-0900",
-    ]);
+    const todays = late.options[0]!.journeys.filter(
+      (x) => x.serviceDate === DATE,
+    );
+    expect(todays.map((x) => x.legs[0]!.journeyId)).toEqual(["R-UP-0900"]);
   });
 
   test("the timeline runs from the last-seen stop to the destination", () => {
@@ -127,10 +128,24 @@ describe("direct planning (round 0)", () => {
     expect(r).toEqual({ kind: "no_route", reverseServed: false });
   });
 
-  test("after the last catchable journey: no_more_today with tomorrow's first", () => {
+  test("late at night, tomorrow's buses follow on (next 24 hours)", () => {
     const r = plan(ctx("23:00"), "B", "D", noTrips);
-    expect(r.kind).toBe("no_more_today");
-    if (r.kind !== "no_more_today") return;
-    expect(r.tomorrowFirst).toBe(at("08:10") + 24 * 60 * 60_000 - BUFFER_MS);
+    if (r.kind !== "ok") throw new Error(r.kind);
+    const js = r.options[0]!.journeys;
+    expect(js.map((x) => [x.legs[0]!.journeyId, x.serviceDate])).toEqual([
+      ["R-UP-0800", addDays(DATE, 1)],
+      ["R-UP-0900", addDays(DATE, 1)],
+    ]);
+    expect(js[0]!.beAtStopBy).toBe(at("08:10") + 24 * 60 * 60_000 - BUFFER_MS);
+  });
+
+  test("the window is 24 hours: at 08:30 tomorrow's 09:00 bus (09:05 at B) is just out", () => {
+    const r = plan(ctx("08:30"), "B", "D", noTrips);
+    if (r.kind !== "ok") throw new Error(r.kind);
+    expect(
+      r.options[0]!.journeys.map(
+        (x) => `${x.legs[0]!.journeyId}@${x.serviceDate}`,
+      ),
+    ).toEqual([`R-UP-0900@${DATE}`, `R-UP-0800@${addDays(DATE, 1)}`]);
   });
 });
