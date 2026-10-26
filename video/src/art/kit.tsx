@@ -45,6 +45,8 @@ export const WIDE: Camera = { x: 160, y: 90, zoom: 1 };
 interface StageProps {
   cam?: Camera;
   bg?: string;
+  /** visible art height; taller than 180 for frames squarer than 16:9 (adds paper above and below) */
+  h?: number;
   children: ReactNode;
 }
 
@@ -52,13 +54,13 @@ interface StageProps {
  * One frame of paper. Line filters "boil" (re-seed every few frames) like hand-drawn animation,
  * so even a still shot feels alive.
  */
-export function Stage({ cam = WIDE, bg = PAPER, children }: StageProps) {
+export function Stage({ cam = WIDE, bg = PAPER, h = 180, children }: StageProps) {
   const frame = useCurrentFrame();
   const boil = Math.floor(frame / 5) % 3;
 
   return (
     <AbsoluteFill style={{ background: bg }}>
-      <svg viewBox="0 0 320 180" width="100%" height="100%" style={{ display: "block" }}>
+      <svg viewBox={`0 ${(180 - h) / 2} 320 ${h}`} width="100%" height="100%" style={{ display: "block" }}>
         <defs>
           <filter id="wash" x="-20%" y="-20%" width="140%" height="140%">
             <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves={3} seed={4} />
