@@ -1,0 +1,24 @@
+{
+  "name": "on-the-way-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts --port=3125",
+    "still": "remotion still src/index.ts OnTheWay --port=3124",
+    "render": "remotion render src/index.ts OnTheWay out/on-the-way.mp4 --port=3124",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.538",
+    "@remotion/google-fonts": "4.0.538",
+    "@remotion/media-utils": "4.0.538",
+    "@remotion/transitions": "4.0.538",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.538"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  }
+}

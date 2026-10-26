@@ -20,3 +20,10 @@ scripts/replay/.env
 
 # design prototypes (published as artifacts, not part of the app)
 .design/
+
+# local MCP servers (holds API keys)
+.mcp.json
+
+# video build output
+video/node_modules
+video/out
