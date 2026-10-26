@@ -39,7 +39,7 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
   Learner check: Run the demo scenario at `--speed 60` with Journeys open and watch a later journey open near reality instead of the timetable.
   Commit: `Learn segment times from ticket history and add demo replay`
 
-- [ ] **4. It runs on the real domains, on your phone**
+- [x] **4. It runs on the real domains, on your phone**
   Becomes usable: `basics.smartabeshackathon.tech` (Vercel) talking to `basicapi.smartabeshackathon.tech` (EC2) over HTTPS, installable as a PWA on Android, with live updates working through the proxy/tunnel.
   Why now: Push and the cross-subdomain cookie both need real HTTPS domains, and you've been bitten by cross-subdomain cookies before, so this risk lands before auth rather than at the end. Every later slice then gets checked on the phone.
   PRD ref: `prd.md > Screens and Layout` (phone-shaped)
@@ -59,7 +59,8 @@ Build mode: fast — the learner reviews and commits each slice themselves (thei
   Learner check: Search a pair that needs a change, read the two legs and the wait, then run a few late replay events on the first leg and watch the plan shift.
   Commit: `Add transfer planning with live connection waits`
 
-- [ ] **6. Sign in, tap Notify me, get pinged at 45/30/15 min and when it slips**
+- [x] **6. Tap Notify me (no sign-in), get pinged at 45/30/15 min and when it slips**
+  As built (Oct 26): no accounts. The push subscription is the device's identity (device id + secret in localStorage), and alerts are scheduled with Postgres + in-process timers instead of BullMQ; see Revisions. Verified on the learner's Android phone against production: a ticket 27 min late pushed "Bus 1 is late by 27 min, be at Kavi Nagar by 2:57 pm".
   Becomes usable: Signed out, Notify me sends you to sign in and back with the alert registered; push notifications arrive on the phone at 45/30/15 min before be-at-stop-by and at every 10 min of lateness; blocked permission shows the "Notifications are blocked" message.
   Why now: Needs real HTTPS and the cookie setup from slice 4, and predictions that move (slices 2–3) to reschedule against.
   PRD ref: `prd.md > The Core Journey` (steps 6–7), `prd.md > Notifications` (Notify me, countdown, delay alerts), `prd.md > Accounts`
